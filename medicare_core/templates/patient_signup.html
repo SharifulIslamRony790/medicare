@@ -2,127 +2,152 @@
 {% load socialaccount %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-7">
-        <div class="card shadow-lg mt-5 border-0">
-            <div class="card-header bg-success text-white text-center">
-                <h3><i class="fas fa-user-plus"></i> Patient Registration</h3>
-            </div>
-            <div class="card-body p-4 bg-light">
+<style>
+    .minimal-form-container {
+        max-width: 450px;
+        margin: 0 auto;
+    }
+    .form-floating label {
+        padding-left: 1.25rem;
+    }
+    .btn-gradient {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border: none;
+        color: white;
+    }
+    .btn-gradient:hover {
+        background: linear-gradient(135deg, #218838, #1ba87e);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+    }
+    .transition-all {
+        transition: all 0.2s ease-in-out;
+    }
+    .password-match-icon {
+        position: absolute;
+        right: 15px;
+        top: 35%;
+        display: none;
+    }
+</style>
+
+<div class="row justify-content-center py-5 animate-fade-in">
+    <div class="minimal-form-container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-dark">Join MediCare</h2>
+            <p class="text-muted">Create your account in seconds.</p>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4 p-md-5">
                 {% if messages %}
                 {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3" role="alert">
                     {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 {% endfor %}
                 {% endif %}
 
-                <form method="post">
+                <a href="{% provider_login_url 'google' %}" class="btn btn-outline-dark w-100 mb-4 rounded-pill fw-medium py-2 d-flex align-items-center justify-content-center transition-all hover-shadow">
+                    <i class="fab fa-google text-danger me-2 fs-5"></i>
+                    Continue with Google
+                </a>
+
+                <div class="d-flex align-items-center mb-4">
+                    <hr class="flex-grow-1">
+                    <span class="px-3 text-muted small fw-medium">OR EMAIL</span>
+                    <hr class="flex-grow-1">
+                </div>
+
+                <form method="post" id="signupForm">
                     {% csrf_token %}
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Username <span class="text-danger">*</span></label>
-                                {{ form.username }}
-                                {% for error in form.username.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
-                                {{ form.email }}
-                                {% for error in form.email.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Password <span class="text-danger">*</span></label>
-                                {{ form.password1 }}
-                                {% for error in form.password1.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                                {% endfor %}
-                                <div class="form-text small">Password must be at least 8 characters</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Confirm Password <span
-                                        class="text-danger">*</span></label>
-                                {{ form.password2 }}
-                                {% for error in form.password2.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Age <span class="text-danger">*</span></label>
-                                {{ form.age }}
-                                {% for error in form.age.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Gender <span class="text-danger">*</span></label>
-                                {{ form.gender }}
-                                {% for error in form.gender.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Phone <span class="text-danger">*</span></label>
-                                {{ form.phone }}
-                                {% for error in form.phone.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
+                    
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Address <span class="text-danger">*</span></label>
-                        {{ form.address }}
-                        {% for error in form.address.errors %}
-                        <div class="text-danger small">{{ error }}</div>
+                        <label class="form-label fw-medium text-secondary small">Full Name</label>
+                        {{ form.name }}
+                        {% for error in form.name.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-success text-white btn-lg fw-bold">Create Patient
-                            Account</button>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-secondary small">Username</label>
+                        {{ form.username }}
+                        {% for error in form.username.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
                     </div>
-                    <div class="text-center mt-3">
-                        <p class="text-muted">OR</p>
-                        <a href="{% provider_login_url 'google' %}" class="btn btn-outline-danger w-100">
-                            <i class="fab fa-google me-2"></i> Sign up with Google
-                        </a>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-secondary small">Email Address</label>
+                        {{ form.email }}
+                        {% for error in form.email.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-secondary small">Password</label>
+                        {{ form.password1 }}
+                        {% for error in form.password1.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4 position-relative">
+                        <label class="form-label fw-medium text-secondary small">Confirm Password</label>
+                        {{ form.password2 }}
+                        <i class="fas fa-check-circle text-success password-match-icon" id="matchIcon"></i>
+                        {% for error in form.password2.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient w-100 py-2 rounded-pill fw-bold fs-5 transition-all">Create Account</button>
                 </form>
             </div>
-            <div class="card-footer text-center">
-                <p class="mb-0">Already have an account? <a href="{% url 'patient_login' %}"
-                        class="text-success fw-bold">Login</a></p>
-                <p class="mt-2 small">
-                    <a href="{% url 'doctor_signup' %}" class="text-muted">Are you a doctor? Register here</a>
-                </p>
+            
+            <div class="card-footer bg-transparent border-0 text-center pb-4">
+                <p class="mb-0 text-muted">Already have an account? <a href="{% url 'login' %}" class="text-success fw-bold text-decoration-none">Log In</a></p>
             </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'doctor_signup' %}" class="text-muted text-decoration-none small hover-success">
+                <i class="fas fa-user-md me-1"></i> Are you a doctor? Register here
+            </a>
         </div>
     </div>
 </div>
+
+<script>
+    // Simple inline validation for password matching
+    document.addEventListener("DOMContentLoaded", function() {
+        const pass1 = document.querySelector("input[name='password1']");
+        const pass2 = document.querySelector("input[name='password2']");
+        const matchIcon = document.getElementById("matchIcon");
+
+        function checkPasswords() {
+            if (pass2.value.length > 0) {
+                if (pass1.value === pass2.value) {
+                    matchIcon.style.display = "block";
+                    pass2.classList.remove("is-invalid");
+                    pass2.classList.add("is-valid");
+                } else {
+                    matchIcon.style.display = "none";
+                    pass2.classList.add("is-invalid");
+                    pass2.classList.remove("is-valid");
+                }
+            } else {
+                matchIcon.style.display = "none";
+                pass2.classList.remove("is-invalid", "is-valid");
+            }
+        }
+
+        pass1.addEventListener("input", checkPasswords);
+        pass2.addEventListener("input", checkPasswords);
+    });
+</script>
 {% endblock %}

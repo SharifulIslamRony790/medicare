@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load socialaccount %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-5">
         <div class="card shadow-lg mt-5">
-            <div class="card-header bg-primary text-white text-center">
+            <div class="card-header text-center">
                 <h3><i class="fas fa-sign-in-alt"></i> Login</h3>
             </div>
             <div class="card-body p-4">
@@ -31,12 +31,8 @@
                     </div>
                 </form>
             </div>
-            <div class="card-footer text-center">
-                <p class="mb-0">Don't have an account? <a href="{% url 'signup' %}">Sign Up</a></p>
-                <p class="mt-2 small">
-                    <a href="{% url 'doctor_login' %}" class="text-muted me-2">Doctor Login</a> |
-                    <a href="{% url 'admin_login' %}" class="text-muted ms-2">Admin Login</a>
-                </p>
+            <div class="card-footer text-center py-3">
+                <p class="mb-0">Don't have an account? <a href="{% url 'signup' %}" class="text-primary fw-bold">Sign Up</a></p>
             </div>
         </div>
     </div>

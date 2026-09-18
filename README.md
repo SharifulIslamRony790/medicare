@@ -1,142 +1,110 @@
-# MediCare - Clinic Management System
+<div align="center">
+  <h1>🏥 MediCare - Advanced Health Management System</h1>
+  <p>A comprehensive, scalable, and secure hospital and clinic management system built with Django.</p>
 
-## 1. MediCare Project Summary
-MediCare is a comprehensive, web-based clinic management system designed to streamline healthcare operations. It provides a robust platform for managing patients, doctors, appointments, prescriptions, and billing. Built with Django and Bootstrap, it ensures a secure, responsive, and user-friendly experience for all stakeholders including administrators, doctors, staff, and patients. The system emphasizes role-based access control, ensuring data privacy and efficient workflow management.
+  ![Django](https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django&logoColor=white)
+  ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+  ![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+  ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
+</div>
 
-## 2. Features
-- **Role-Based Portals**: Dedicated portals for Patients, Doctors, and Admins with strict permission isolation.
-- **Patient Management**: Complete patient profiles, medical history tracking, and easy registration.
-- **Doctor Management**: Doctor profiles, specialty management, and scheduling.
-- **Appointment System**: Smart booking system with calendar integration and email notifications.
-- **Prescription Management**: Digital prescription generation with PDF download capability (Doctor only).
-- **Billing & Invoices**: Integrated billing system with support for multiple payment methods (Visa, bKash, Nagad) and PDF receipts.
-- **Secure Authentication**: Robust login/signup system with role verification.
-- **Google Sign-In**: Integrated Google OAuth 2.0 for fast and secure login/signup.
-- **Responsive Design**: Mobile-friendly interface built with Bootstrap 5.
-- **REST API**: Fully functional API for future mobile app integration.
+<br />
 
-## 3. Requirements
-- **Python**: 3.10 or higher
-- **Django**: 5.0+
-- **Database**: SQLite (default) or PostgreSQL (recommended for production)
-- **Dependencies**: Listed in `requirements.txt` (includes `reportlab` for PDF, `djangorestframework` for API)
+## 📖 Overview
 
-## 4. Installation
-Follow these steps to set up the project:
+MediCare is an all-in-one solution designed to streamline the operations of hospitals and clinics. It provides dedicated interfaces for managing patients, doctors, appointments, medical billing, and clinical prescriptions, ensuring a seamless experience for both staff and patients.
 
-1. **Clone the Repository**:
-   ```bash
-   git clone <repository-url>
-   cd MediCare
-   ```
+## 🌟 Key Features
 
-2. **Create Virtual Environment**:
-   ```bash
-   python -m venv venv
-   # Windows
-   venv\Scripts\activate
-   # Linux/Mac
-   source venv/bin/activate
-   ```
+- **🛡️ Role-Based Access Control (RBAC):** Dedicated portals and strict permissions for Admins, Doctors, Staff (Nurses, Cashiers, Receptionists), and Patients.
+- **📅 Smart Appointment Scheduling:** Dynamic time-slot generation (10-minute intervals) that automatically accounts for doctor schedules and leaves. Built-in logic prevents double-booking.
+- **💊 Clinical Prescriptions:** Doctors can write detailed prescriptions including symptoms, diagnoses, medications (with dosages), and advice. Generates highly styled PDF prescriptions on the fly.
+- **💳 Billing & Payments:** Automated invoice generation, partial/full payment tracking, and PDF payment receipts.
+- **📧 Asynchronous Notifications:** Uses background threading to send email notifications for bookings and payments without freezing the user interface.
+- **🔒 Secure Infrastructure:** Built-in protection against IDOR (Insecure Direct Object References) and XSS. Production-ready security headers enforced.
+- **📊 Admin Dashboard:** Excel report generation and KPI tracking using Unfold Admin.
 
-3. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+## 🏗️ Tech Stack
 
-4. **Apply Migrations**:
-   ```bash
-   python manage.py migrate
-   ```
+- **Backend:** Python 3, Django 5.x
+- **Database:** SQLite (Development) / PostgreSQL (Production)
+- **Document Generation:** ReportLab (PDFs), XlsxWriter (Excel)
+- **Frontend:** HTML5, CSS3, JavaScript (Vanilla), Bootstrap 5
 
-5. **Create Superuser**:
-   ```bash
-   python manage.py createsuperuser
-   ```
+## 🚀 Getting Started
 
-## 5. Environment Variables
-Create a `.env` file in the root directory (same level as `manage.py`) to manage sensitive settings.
-*Note: For local development, default settings are used if `.env` is missing.*
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
+### Prerequisites
+
+- Python 3.10 or higher
+- Git
+
+### Installation
+
+**1. Clone the Repository**
+```bash
+git clone https://github.com/yourusername/MediCare.git
+cd MediCare
+```
+
+**2. Create & Activate a Virtual Environment**
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+**3. Install Dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**4. Environment Variables**
+Create a `.env` file in the root directory (where `manage.py` is located) and configure your secrets:
 ```env
 DEBUG=True
-SECRET_KEY=your-secret-key-here
+SECRET_KEY=your-super-secret-key-here
 ALLOWED_HOSTS=localhost,127.0.0.1
-# Email Settings (Optional for testing)
 EMAIL_HOST_USER=your-email@gmail.com
 EMAIL_HOST_PASSWORD=your-app-password
 ```
 
-## 6. Google OAuth Setup
-To enable "Log in with Google":
-1.  **Google Cloud Console**:
-    -   Create a project and configure the OAuth Consent Screen.
-    -   Create OAuth Credentials (Client ID & Secret).
-    -   Add `http://localhost:8000` to Authorized JavaScript origins.
-    -   Add `http://localhost:8000/accounts/google/login/callback/` to Authorized redirect URIs.
+**5. Database Migrations**
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
 
-2.  **Django Admin Configuration**:
-    -   Go to [http://localhost:8000/admin/socialaccount/socialapp/](http://localhost:8000/admin/socialaccount/socialapp/).
-    -   Add a new **Social Application**.
-    -   **Provider**: Google
-    -   **Name**: Google
-    -   **Client ID**: (Your Google Client ID)
-    -   **Secret Key**: (Your Google Client Secret)
-    -   **Sites**: Add `localhost:8000` (or your site) to "Chosen sites".
+**6. Create Superuser (Admin)**
+```bash
+python manage.py createsuperuser
+```
 
-3.  **Local Secrets Backup (Optional)**:
-    -   Store your Client ID and Secret in a local `secrets.json` file (added to `.gitignore`) to keep them safe and accessible.
-
-## 7. Settings Summary
-The project settings are configured in `medicare_core/settings.py`. Key configurations include:
-- **INSTALLED_APPS**: Includes custom apps `users`, `patients`, `doctors`, `appointments`, `prescriptions`, `billing`.
-- **MIDDLEWARE**: Standard Django middleware plus custom role-based access controls.
-- **TEMPLATES**: Configured to use project-level and app-level templates.
-- **STATIC/MEDIA**: Configured for serving static files and user-uploaded media (profile pictures, reports).
-- **AUTH_USER_MODEL**: Custom user model `users.User` used for authentication.
-
-## 8. Run Locally
-To run the development server:
-
+**7. Run the Development Server**
 ```bash
 python manage.py runserver
 ```
-Access the application at: [http://localhost:8000](http://localhost:8000)
+Navigate to `http://127.0.0.1:8000` in your browser.
 
-**Default Portals:**
-- **Patient/Main**: [http://localhost:8000/](http://localhost:8000/)
-- **Doctor Login**: [http://localhost:8000/login/doctor/](http://localhost:8000/login/doctor/)
-- **Admin Login**: [http://localhost:8000/login/admin/](http://localhost:8000/login/admin/)
+## ☁️ Deployment (Render)
 
-## 9. Project Structure
-```
-MediCare/
-├── medicare_core/      # Project configuration & core views
-├── users/              # Authentication & User models
-├── patients/           # Patient management app
-├── doctors/            # Doctor management app
-├── appointments/       # Appointment booking app
-├── prescriptions/      # Prescription generation app
-├── billing/            # Invoicing & Payment app
-├── templates/          # Global HTML templates
-├── static/             # CSS, JS, Images
-├── media/              # User uploaded files
-├── manage.py           # Django management script
-└── requirements.txt    # Project dependencies
-```
+This project is configured for easy deployment on platforms like Render:
+1. Set up a PostgreSQL database (e.g., Neon).
+2. Ensure `dj-database-url`, `psycopg2-binary`, `gunicorn`, and `whitenoise` are installed.
+3. Configure `DATABASE_URL` and `SECRET_KEY` in your host's environment variables.
+4. Use `./build.sh` (or `python manage.py collectstatic --noinput && python manage.py migrate`) as your build command.
+5. Use `gunicorn medicare_core.wsgi:application` as your start command.
 
-## 10. Production Tips
-- **Debug Mode**: Ensure `DEBUG=False` in production.
-- **Database**: Switch to PostgreSQL for better performance and reliability.
-- **Static Files**: Use `whitenoise` or Nginx to serve static files efficiently.
-- **Security**: Set a strong `SECRET_KEY` and configure `ALLOWED_HOSTS`.
-- **HTTPS**: Always use HTTPS (SSL) to secure user data.
+## 👨‍💻 Developer Guide
 
-## 11. Credits
-Developed by Md. Shariful Islam Rony.
-- **Frameworks**: Django, Bootstrap
-- **Icons**: FontAwesome
-- **PDF Generation**: ReportLab
+The codebase follows a strict clean-code architecture. 
+- **Sectional Comments:** All major views and models contain structured English comments (e.g., `=== FEATURE: ... ===`) explaining the purpose of the code.
+- **Modifying Permissions:** Role logic is centralized in `users/models.py` within the `User` class. Update helper methods like `can_manage_billing()` to change access rules globally.
 
 ---
-*© 2025 MediCare. All Rights Reserved.*
+*Built with ❤️ for better healthcare management.*

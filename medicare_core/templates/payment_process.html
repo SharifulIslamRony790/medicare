@@ -1,69 +1,286 @@
 {% extends 'base.html' %}
+{% block title %}Secure Payment - MediCare{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-lg border-0">
-            <div class="card-header bg-primary text-white p-4">
-                <h4 class="mb-0"><i class="fas fa-lock me-2"></i> Secure Payment</h4>
+<style>
+    /* Global Overlay */
+    #processingOverlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.9); z-index: 9999;
+        display: none; flex-direction: column; justify-content: center; align-items: center;
+    }
+    .spinner-border { width: 3rem; height: 3rem; }
+
+    /* MFS (Mobile Financial Service) Base Styles */
+    .mfs-container {
+        max-width: 400px; margin: 0 auto;
+        font-family: Arial, sans-serif;
+    }
+    .mfs-header {
+        color: white; padding: 20px; text-align: center;
+        border-top-left-radius: 8px; border-top-right-radius: 8px;
+    }
+    .mfs-body {
+        background: #f8f9fa; border: 1px solid #ddd;
+        border-top: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+        padding: 0; text-align: center;
+    }
+    .mfs-amount-banner {
+        background: rgba(255,255,255,0.2); padding: 10px; margin-top: 15px; font-weight: bold;
+    }
+    .mfs-input-group { padding: 30px 20px; min-height: 250px; display: flex; flex-direction: column; justify-content: center; }
+    .mfs-input {
+        width: 100%; padding: 12px; border: 1px solid #ccc; text-align: center; font-size: 1.2rem;
+        letter-spacing: 2px; margin-bottom: 20px; outline: none; transition: 0.3s;
+    }
+    .mfs-input:focus { border-color: #333; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .mfs-btn-group { display: flex; border-top: 1px solid #ddd; }
+    .mfs-btn {
+        flex: 1; padding: 15px; border: none; background: #e9ecef; cursor: pointer;
+        font-weight: bold; text-transform: uppercase; color: #555; transition: 0.2s;
+    }
+    .mfs-btn:hover { background: #dde0e3; }
+    .mfs-btn-proceed { background: #d1d5db; color: #333; }
+    .mfs-step { display: none; }
+    .mfs-step.active { display: block; }
+    .mfs-logo { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
+
+    /* bKash Specific */
+    .bkash-theme .mfs-header { background: #e2136e; }
+    .bkash-theme .mfs-btn-proceed:hover { background: #e2136e; color: white; }
+    .bkash-text { color: #e2136e; }
+
+    /* Nagad Specific */
+    .nagad-theme .mfs-header { background: #f7941d; }
+    .nagad-theme .mfs-btn-proceed:hover { background: #f7941d; color: white; }
+    .nagad-text { color: #f7941d; }
+
+    /* Card Specific */
+    .card-payment-container { max-width: 500px; margin: 0 auto; }
+    .credit-card-box {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border-radius: 15px; padding: 25px; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        margin-bottom: 25px; position: relative; overflow: hidden;
+    }
+    .chip { width: 50px; height: 35px; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); border-radius: 5px; margin-bottom: 20px; opacity: 0.8; }
+    .card-number-display { font-size: 1.5rem; letter-spacing: 3px; margin-bottom: 20px; font-family: monospace; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+    .card-info-display { display: flex; justify-content: space-between; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
+</style>
+
+<!-- Full Screen Processing Overlay -->
+<div id="processingOverlay">
+    <div class="spinner-border text-primary mb-3" role="status"></div>
+    <h4 class="fw-bold">Processing secure payment...</h4>
+    <p class="text-muted">Please do not close or refresh this window.</p>
+</div>
+
+<div class="container py-4 animate-fade-in">
+    <div class="text-center mb-4">
+        <a href="{% url 'payment_select' invoice.id %}" class="text-muted text-decoration-none"><i class="fas fa-arrow-left me-1"></i> Change Payment Method</a>
+    </div>
+
+    <form id="paymentForm" method="post">
+        {% csrf_token %}
+        
+        {% if method == 'bkash' or method == 'nagad' %}
+        
+        <!-- MFS (Mobile Financial Services) SIMULATION -->
+        <div class="mfs-container shadow-lg rounded {% if method == 'bkash' %}bkash-theme{% else %}nagad-theme{% endif %}">
+            <div class="mfs-header">
+                <div class="mfs-logo">
+                    {% if method == 'bkash' %}
+                    <i class="fas fa-paper-plane me-2"></i>bKash
+                    {% else %}
+                    <i class="fas fa-bolt me-2"></i>Nagad
+                    {% endif %}
+                </div>
+                <div>Payment Gateway</div>
+                <div class="mfs-amount-banner">
+                    Merchant: MediCare Hospital<br>
+                    Invoice: #{{ invoice.id }}<br>
+                    Amount: ${{ invoice.total_amount }}
+                </div>
             </div>
-            <div class="card-body p-4">
-                <div class="text-center mb-4">
-                    <p class="text-muted mb-1">Paying via {{ method_name }}</p>
-                    <h3 class="fw-bold">${{ invoice.amount }}</h3>
+            <div class="mfs-body">
+                
+                <!-- Step 1: Account Number -->
+                <div id="mfs-step-1" class="mfs-step active">
+                    <div class="mfs-input-group">
+                        <p class="text-muted fw-bold mb-3">Your {% if method == 'bkash' %}bKash{% else %}Nagad{% endif %} Account Number</p>
+                        <input type="tel" id="mfs-account" class="mfs-input" placeholder="e.g 01XXXXXXXXX" autocomplete="off" maxlength="11">
+                        <small class="text-muted">By clicking proceed, you agree to the Terms and Conditions.</small>
+                    </div>
+                    <div class="mfs-btn-group">
+                        <button type="button" class="mfs-btn" onclick="window.location.href='{% url 'payment_select' invoice.id %}'">Close</button>
+                        <button type="button" class="mfs-btn mfs-btn-proceed" onclick="nextMfsStep(2)">Proceed</button>
+                    </div>
                 </div>
 
-                <form method="post">
-                    {% csrf_token %}
+                <!-- Step 2: Verification Code (OTP) -->
+                <div id="mfs-step-2" class="mfs-step">
+                    <div class="mfs-input-group">
+                        <p class="text-muted fw-bold mb-3">Enter Verification Code</p>
+                        <p class="small text-muted mb-3">A 6-digit verification code has been sent to your mobile number.</p>
+                        <input type="text" id="mfs-otp" class="mfs-input" placeholder="XXXXXX" autocomplete="off" maxlength="6">
+                    </div>
+                    <div class="mfs-btn-group">
+                        <button type="button" class="mfs-btn" onclick="nextMfsStep(1)">Back</button>
+                        <button type="button" class="mfs-btn mfs-btn-proceed" onclick="nextMfsStep(3)">Proceed</button>
+                    </div>
+                </div>
 
-                    {% if method == 'visa' or method == 'mastercard' %}
-                    <!-- Card Form -->
-                    <div class="mb-3">
-                        <label class="form-label">Card Number</label>
-                        <input type="text" class="form-control form-control-lg" placeholder="0000 0000 0000 0000"
-                            required>
+                <!-- Step 3: PIN -->
+                <div id="mfs-step-3" class="mfs-step">
+                    <div class="mfs-input-group">
+                        <p class="text-muted fw-bold mb-3">Enter PIN</p>
+                        <input type="password" id="mfs-pin" class="mfs-input" placeholder="Enter PIN" autocomplete="off" maxlength="5">
                     </div>
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Expiry Date</label>
-                            <input type="text" class="form-control" placeholder="MM/YY" required>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label">CVV</label>
-                            <input type="password" class="form-control" placeholder="123" required>
-                        </div>
+                    <div class="mfs-btn-group">
+                        <button type="button" class="mfs-btn" onclick="nextMfsStep(2)">Back</button>
+                        <button type="button" class="mfs-btn mfs-btn-proceed" onclick="submitSimulatedPayment(this)">Confirm</button>
                     </div>
-                    <div class="mb-4">
-                        <label class="form-label">Cardholder Name</label>
-                        <input type="text" class="form-control" placeholder="John Doe" required>
-                    </div>
+                </div>
 
-                    {% else %}
-                    <!-- Mobile Banking Form -->
-                    <div class="mb-3">
-                        <label class="form-label">Mobile Number</label>
-                        <input type="tel" class="form-control form-control-lg" placeholder="01XXXXXXXXX" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">PIN</label>
-                        <input type="password" class="form-control" placeholder="Enter PIN" required>
-                    </div>
-                    {% endif %}
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            Pay ${{ invoice.amount }}
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="card-footer bg-light text-center p-3">
-                <small class="text-muted"><i class="fas fa-shield-alt me-1"></i> 100% Secure Transaction</small>
             </div>
         </div>
-        <div class="text-center mt-3">
-            <a href="{% url 'payment_select' invoice.id %}" class="text-muted">Change Payment Method</a>
+
+        {% else %}
+
+        <!-- CARD PAYMENT SIMULATION -->
+        <div class="card-payment-container">
+            <h3 class="fw-bold text-center mb-4">Secure Checkout</h3>
+            
+            <div class="credit-card-box">
+                <i class="fab fa-{{ method }} fa-3x position-absolute" style="top: 20px; right: 25px; opacity: 0.5;"></i>
+                <div class="chip"></div>
+                <div class="card-number-display" id="display-number">•••• •••• •••• ••••</div>
+                <div class="card-info-display">
+                    <div>
+                        <div style="font-size: 0.6rem;">Card Holder</div>
+                        <div id="display-name" style="font-weight: bold;">YOUR NAME</div>
+                    </div>
+                    <div class="text-end">
+                        <div style="font-size: 0.6rem;">Expires</div>
+                        <div id="display-expiry" style="font-weight: bold;">MM/YY</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                        <span class="text-muted fw-medium">Total Amount</span>
+                        <h3 class="fw-bold text-primary mb-0">${{ invoice.total_amount }}</h3>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted small">CARD NUMBER</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-credit-card text-muted"></i></span>
+                            <input type="text" class="form-control border-start-0 ps-0 form-control-lg" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19" required autocomplete="cc-number">
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <label class="form-label fw-bold text-muted small">EXPIRY DATE</label>
+                            <input type="text" class="form-control form-control-lg" id="card-expiry" placeholder="MM/YY" maxlength="5" required autocomplete="cc-exp">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold text-muted small">CVV</label>
+                            <input type="password" class="form-control form-control-lg" placeholder="•••" maxlength="4" required autocomplete="cc-csc">
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label fw-bold text-muted small">CARDHOLDER NAME</label>
+                        <input type="text" class="form-control form-control-lg" id="card-name" placeholder="John Doe" required autocomplete="cc-name" style="text-transform: uppercase;">
+                    </div>
+
+                    <button type="button" onclick="submitSimulatedPayment(this)" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm py-3 fw-bold">
+                        <i class="fas fa-lock me-2"></i> Pay ${{ invoice.total_amount }} Securely
+                    </button>
+                    
+                    <div class="text-center mt-3">
+                        <small class="text-muted"><i class="fas fa-shield-alt text-success me-1"></i> Secured by 256-bit SSL Encryption</small>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+
+        {% endif %}
+    </form>
 </div>
+
+<script>
+    // MFS Logic
+    function nextMfsStep(step) {
+        if (step === 2) {
+            const acc = document.getElementById('mfs-account').value;
+            if (acc.length < 11) { alert("Please enter a valid 11-digit mobile number."); return; }
+        }
+        if (step === 3) {
+            const otp = document.getElementById('mfs-otp').value;
+            if (otp.length < 4) { alert("Please enter a valid verification code."); return; }
+        }
+        
+        document.querySelectorAll('.mfs-step').forEach(el => el.classList.remove('active'));
+        document.getElementById('mfs-step-' + step).classList.add('active');
+    }
+
+    // Card Input Syncing
+    const cardNumInput = document.getElementById('card-number');
+    const cardNameInput = document.getElementById('card-name');
+    const cardExpInput = document.getElementById('card-expiry');
+    
+    if (cardNumInput) {
+        cardNumInput.addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            let matches = v.match(/\d{4,16}/g);
+            let match = matches && matches[0] || '';
+            let parts = [];
+            for (let i = 0, len = match.length; i < len; i += 4) {
+                parts.push(match.substring(i, i + 4));
+            }
+            if (parts.length) { e.target.value = parts.join(' '); }
+            else { e.target.value = v; }
+            
+            document.getElementById('display-number').innerText = e.target.value || '•••• •••• •••• ••••';
+        });
+
+        cardNameInput.addEventListener('input', function(e) {
+            document.getElementById('display-name').innerText = e.target.value.toUpperCase() || 'YOUR NAME';
+        });
+
+        cardExpInput.addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 2) { v = v.substring(0,2) + '/' + v.substring(2,4); }
+            e.target.value = v;
+            document.getElementById('display-expiry').innerText = v || 'MM/YY';
+        });
+    }
+
+    // Submit Simulation
+    function submitSimulatedPayment(btn) {
+        // Basic validation
+        {% if method == 'bkash' or method == 'nagad' %}
+        const pin = document.getElementById('mfs-pin').value;
+        if (pin.length < 4) { alert("Please enter your PIN to confirm."); return; }
+        {% else %}
+        const form = document.getElementById('paymentForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        {% endif %}
+
+        // Show processing overlay
+        document.getElementById('processingOverlay').style.display = 'flex';
+        
+        // Delay form submission to simulate real network/bank processing
+        setTimeout(() => {
+            document.getElementById('paymentForm').submit();
+        }, 3000);
+    }
+</script>
 {% endblock %}

@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load socialaccount %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card shadow-lg mt-5">
-            <div class="card-header bg-success text-white text-center">
+            <div class="card-header text-center">
                 <h3><i class="fas fa-user-plus"></i> Sign Up</h3>
             </div>
             <div class="card-body p-4">
@@ -24,7 +24,7 @@
                     </div>
                     {% endfor %}
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-success btn-lg">Create Account</button>
+                        <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
                     </div>
 
                     <div class="text-center mt-3">
@@ -38,11 +38,11 @@
             <div class="card-footer text-center">
                 <p class="mb-0">Already have an account? <a href="{% url 'login' %}">Login</a></p>
                 <p class="mt-2 small">
-                    <a href="{% url 'doctor_signup' %}" class="text-muted me-2">Are you a doctor? Register here</a> |
-                    <a href="{% url 'admin_signup' %}" class="text-muted ms-2">Admin Registration</a>
+                    <a href="{% url 'doctor_signup' %}" class="text-muted">Are you a doctor? Register here</a>
                 </p>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+

@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4 align-items-center animate-fade-in">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-primary mb-1">Dr. {{ doctor.name|default:user.username }}'s Dashboard</h2>
+        <p class="text-muted mb-0">Overview of your practice and appointments</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'doctor_leave_list' %}" class="btn btn-outline-primary"><i class="fas fa-calendar-times me-2"></i>Manage Leaves</a>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-4 mb-5 animate-fade-in" style="animation-delay: 0.1s;">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 rounded-4">
+            <div class="card-body p-4 text-center">
+                <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-users fa-2x text-primary"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ total_patients }}</h3>
+                <p class="text-muted mb-0">Total Patients</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 rounded-4">
+            <div class="card-body p-4 text-center">
+                <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-clock fa-2x text-warning"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ pending_appointments }}</h3>
+                <p class="text-muted mb-0">Pending Appointments</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100 rounded-4">
+            <div class="card-body p-4 text-center">
+                <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-check-circle fa-2x text-success"></i>
+                </div>
+                <h3 class="fw-bold mb-1">{{ completed_appointments }}</h3>
+                <p class="text-muted mb-0">Completed Appointments</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 animate-fade-in" style="animation-delay: 0.2s;">
+    <!-- Today's Appointments -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-calendar-day text-primary me-2"></i>Today's Schedule</h5>
+                <a href="{% url 'appointment_list' %}" class="btn btn-sm btn-link text-decoration-none">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for appointment in today_appointments %}
+                    <li class="list-group-item p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ appointment.patient.user.username }}</h6>
+                                <p class="text-muted small mb-0"><i class="far fa-clock me-1"></i>{{ appointment.time }}</p>
+                            </div>
+                            <div>
+                                <span class="badge bg-{% if appointment.status == 'completed' %}success{% elif appointment.status == 'confirmed' %}primary{% elif appointment.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                                    {{ appointment.status|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item p-5 text-center text-muted">
+                        <div class="mb-3"><i class="far fa-calendar-check fa-3x opacity-25"></i></div>
+                        <p class="mb-0">No appointments scheduled for today.</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upcoming Appointments -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-calendar-alt text-primary me-2"></i>Upcoming</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for appointment in upcoming_appointments %}
+                    <li class="list-group-item p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold">{{ appointment.patient.user.username }}</h6>
+                                <p class="text-muted small mb-0">
+                                    <i class="far fa-calendar me-1"></i>{{ appointment.date }} at {{ appointment.time }}
+                                </p>
+                            </div>
+                            <div>
+                                <span class="badge bg-primary">{{ appointment.status|title }}</span>
+                            </div>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item p-5 text-center text-muted">
+                        <div class="mb-3"><i class="far fa-calendar-alt fa-3x opacity-25"></i></div>
+                        <p class="mb-0">No upcoming appointments.</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

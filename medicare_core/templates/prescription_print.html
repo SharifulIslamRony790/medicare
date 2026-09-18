@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription #{{ prescription.id }} - MediCare</title>
+    <!-- Include Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .print-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .header-section {
+            border-bottom: 3px solid #1d4ed8;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .hospital-name {
+            color: #1d4ed8;
+            font-weight: 700;
+            font-size: 32px;
+        }
+        .doctor-info {
+            text-align: right;
+        }
+        .doctor-name {
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .doctor-specialty {
+            color: #6c757d;
+        }
+        .patient-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .rx-logo {
+            font-size: 40px;
+            font-weight: bold;
+            color: #1d4ed8;
+            margin: 20px 0;
+            font-family: serif;
+        }
+        .medicine-table th {
+            background-color: #f8f9fa !important;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+        }
+        .signature-box {
+            margin-top: 80px;
+            width: 250px;
+            text-align: center;
+            float: right;
+            page-break-inside: avoid;
+        }
+        .signature-font {
+            font-family: 'Brush Script MT', 'Comic Sans MS', cursive;
+            transform: rotate(-3deg);
+        }
+        
+        @media print {
+            body {
+                background-color: white;
+            }
+            .print-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+            .medicine-table th {
+                background-color: #f3f4f6 !important;
+                -webkit-print-color-adjust: exact;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-4 mb-3 text-end no-print" style="max-width: 800px;">
+    <button onclick="window.print()" class="btn btn-primary shadow-sm"><i class="fas fa-print me-2"></i> Print Prescription</button>
+</div>
+
+<div class="print-container">
+    <div class="header-section d-flex justify-content-between align-items-center">
+        <div>
+            <div class="hospital-name">MediCare Hospital</div>
+            <div class="text-muted">Providing safe & professional medical services</div>
+        </div>
+        <div class="doctor-info">
+            <div class="doctor-name">Dr. {{ prescription.appointment.doctor.name }}</div>
+            <div class="doctor-specialty">{{ prescription.appointment.doctor.specialty }}</div>
+            <div>Phone: {{ prescription.appointment.doctor.phone }}</div>
+        </div>
+    </div>
+    
+    <div class="patient-info">
+        <div class="row">
+            <div class="col-sm-4"><strong>Patient:</strong> {{ prescription.appointment.patient.name }}</div>
+            <div class="col-sm-4"><strong>Age:</strong> {{ prescription.appointment.patient.age }} Yrs</div>
+            <div class="col-sm-4"><strong>Gender:</strong> {{ prescription.appointment.patient.gender|title }}</div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-sm-4"><strong>Date:</strong> {{ prescription.created_at|date:"d M Y" }}</div>
+            <div class="col-sm-4"><strong>Time:</strong> {{ prescription.created_at|date:"h:i A" }}</div>
+            <div class="col-sm-4"><strong>Prescription ID:</strong> #{{ prescription.id }}</div>
+        </div>
+    </div>
+    
+    {% if prescription.symptoms or prescription.diagnosis %}
+    <div class="mb-4">
+        {% if prescription.symptoms %}
+        <p><strong>Symptoms:</strong> {{ prescription.symptoms }}</p>
+        {% endif %}
+        {% if prescription.diagnosis %}
+        <p><strong>Diagnosis:</strong> {{ prescription.diagnosis }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="rx-logo">Rx</div>
+    
+    {% if prescription.medications.all %}
+    <table class="table table-bordered medicine-table">
+        <thead>
+            <tr>
+                <th width="5%">#</th>
+                <th width="35%">Medicine Name</th>
+                <th width="15%">Dosage</th>
+                <th width="15%">Duration</th>
+                <th width="30%">Instructions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for med in prescription.medications.all %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><strong>{{ med.medicine_name }}</strong></td>
+                <td>{{ med.dosage }}</td>
+                <td>{{ med.duration }}</td>
+                <td>{{ med.instruction|default:"--" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% elif prescription.medicines %}
+    <div class="mb-4">
+        {{ prescription.medicines|linebreaks }}
+    </div>
+    {% endif %}
+    
+    {% if prescription.advice %}
+    <div class="mt-4">
+        <h5>Advice / Follow-up:</h5>
+        <p>{{ prescription.advice|linebreaks }}</p>
+    </div>
+    {% endif %}
+    
+    <div class="clearfix">
+        <div class="signature-box">
+            <p class="mb-0 signature-font" style="font-size: 1.8rem; color: #1d4ed8; line-height: 1; margin-bottom: 5px !important;">{{ prescription.appointment.doctor.name }}</p>
+            <div style="width: 100%; border-bottom: 2px solid #000; margin: 0 auto 5px auto;"></div>
+            <p class="mb-0 fw-bold text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px;">Authorized Signature</p>
+            <p class="text-muted mb-0" style="font-size: 0.75rem;">{{ prescription.created_at|date:"M d, Y" }}</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Automatically trigger print if ?print=1 is in the URL
+    if (window.location.search.includes('print=1')) {
+        setTimeout(function() {
+            window.print();
+        }, 300);
+    }
+</script>
+
+</body>
+</html>

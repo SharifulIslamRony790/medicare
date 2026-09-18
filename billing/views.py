@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from .models import Invoice, Payment
 from .serializers import InvoiceSerializer
-from .forms import InvoiceForm
+from .forms import InvoiceForm, InvoiceItemFormSet
 import uuid
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -17,51 +17,111 @@ from io import BytesIO
 from django.core.mail import send_mail
 from django.conf import settings
 
-# API ViewSet
+# ==============================================================================
+# FEATURE: API VIEWS
+# PURPOSE: Provides REST endpoints for Invoices.
+# ==============================================================================
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
     permission_classes = [IsAuthenticated]
 
-# UI Views
+# ==============================================================================
+# FEATURE: INVOICE MANAGEMENT (List, Create, Detail, Approve)
+# PURPOSE: Handles creating invoices by staff, viewing them by patients, 
+#          and the approval workflow for managers.
+# ==============================================================================
 @login_required
 def invoice_list(request):
     # Filter to show only logged-in user's invoices
-    if hasattr(request.user, 'patient_profile'):
-        invoices = Invoice.objects.filter(patient=request.user.patient_profile).select_related('patient', 'appointment').order_by('-date')
-    else:
-        # Admin/staff can see all invoices
+    if hasattr(request.user, 'patient_profile') and request.user.role == 'patient':
+        invoices = Invoice.objects.filter(patient=request.user.patient_profile, is_approved=True).select_related('patient', 'appointment').order_by('-date')
+    elif request.user.can_manage_billing():
+        # Admin, Cashier, Manager can see all invoices
         invoices = Invoice.objects.all().select_related('patient', 'appointment').order_by('-date')
+    else:
+        return render(request, 'error_403.html', {'message': "You don't have permission to view invoices."})
     return render(request, 'invoice_list.html', {'invoices': invoices})
 
 @login_required
 def invoice_add(request):
-    # Only admin/superuser/staff can create invoices
-    if not (request.user.is_superuser or request.user.role in ['admin', 'staff']):
-        return HttpResponseForbidden("You don't have permission to create invoices.")
+    # Only admin/superuser or cashier can create invoices
+    has_permission = False
+    if request.user.is_superuser or request.user.role == 'admin':
+        has_permission = True
+    elif request.user.role == 'staff' and hasattr(request.user, 'staff_profile'):
+        if request.user.staff_profile.sub_role == 'cashier':
+            has_permission = True
+            
+    if not has_permission:
+        return render(request, 'error_403.html', {'message': "You don't have permission to create invoices. Only Cashiers and Admins can create bills."})
     if request.method == 'POST':
         form = InvoiceForm(request.POST)
-        if form.is_valid():
-            form.save()
+        formset = InvoiceItemFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            invoice = form.save(commit=False)
+            invoice.created_by = request.user
+            invoice.is_approved = False # Force manual approval workflow
+            invoice.save()
+            formset.instance = invoice
+            formset.save()
+            
+            # Calculate total_amount
+            total = sum(item.amount for item in invoice.line_items.all())
+            invoice.total_amount = total
+            invoice.save()
+            
             return redirect('invoice_list')
     else:
         form = InvoiceForm()
-    return render(request, 'invoice_form.html', {'form': form})
+        formset = InvoiceItemFormSet()
+        
+    from prescriptions.models import Prescription
+    import json
+    prescriptions = Prescription.objects.all().values_list('appointment_id', 'id')
+    prescription_map = {str(app_id): rx_id for app_id, rx_id in prescriptions if app_id}
+    
+    context = {
+        'form': form, 
+        'formset': formset,
+        'prescription_map_json': json.dumps(prescription_map)
+    }
+    return render(request, 'invoice_form.html', context)
 
+@login_required
 def invoice_detail(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
+    
+    # Check permissions
+    has_permission = False
+    if hasattr(request.user, 'patient_profile') and invoice.patient == request.user.patient_profile:
+        if invoice.is_approved:
+            has_permission = True
+    elif request.user.can_manage_billing():
+        has_permission = True
+        
+    if not has_permission:
+        return render(request, 'error_403.html', {'message': "You don't have permission to view this invoice."})
+        
     return render(request, 'invoice_detail.html', {'invoice': invoice})
 
+# ==============================================================================
+# FEATURE: PAYMENT PROCESSING
+# PURPOSE: Handles the selection of payment methods, processing mock transactions,
+#          and asynchronously sending email receipts to patients.
+# ==============================================================================
 @login_required
 def payment_select(request, invoice_id):
     invoice = get_object_or_404(Invoice, pk=invoice_id)
     
-    # Only the patient who owns the invoice can pay
+    # Only the patient who owns the invoice can pay, and it must be approved
     if hasattr(request.user, 'patient_profile'):
         if invoice.patient != request.user.patient_profile:
-            return HttpResponseForbidden("You can only pay your own invoices.")
+            return render(request, 'error_403.html', {'message': "You can only pay your own invoices."})
+        if not invoice.is_approved:
+            return render(request, 'error_403.html', {'message': "This invoice is pending approval and cannot be paid yet."})
     else:
-        return HttpResponseForbidden("Only patients can pay invoices.")
+        return render(request, 'error_403.html', {'message': "Only patients can pay invoices."})
     
     if invoice.is_paid:
         return redirect('invoice_detail', pk=invoice_id)
@@ -71,12 +131,14 @@ def payment_select(request, invoice_id):
 def payment_process(request, invoice_id, method):
     invoice = get_object_or_404(Invoice, pk=invoice_id)
     
-    # Only the patient who owns the invoice can pay
+    # Only the patient who owns the invoice can pay, and it must be approved
     if hasattr(request.user, 'patient_profile'):
         if invoice.patient != request.user.patient_profile:
-            return HttpResponseForbidden("You can only pay your own invoices.")
+            return render(request, 'error_403.html', {'message': "You can only pay your own invoices."})
+        if not invoice.is_approved:
+            return render(request, 'error_403.html', {'message': "This invoice is pending approval and cannot be paid yet."})
     else:
-        return HttpResponseForbidden("Only patients can pay invoices.")
+        return render(request, 'error_403.html', {'message': "Only patients can pay invoices."})
     
     if request.method == 'POST':
         # Simulate payment processing
@@ -85,12 +147,12 @@ def payment_process(request, invoice_id, method):
             invoice=invoice,
             method=method.upper(),
             transaction_id=transaction_id,
-            amount=invoice.amount
+            amount=invoice.total_amount
         )
-        invoice.is_paid = True
+        invoice.status = 'Paid'
         invoice.save()
 
-        # Send Email Notification TO User
+        # Send Email Notification TO User asynchronously
         # Get user from patient profile
         patient_user = invoice.patient.user
         if patient_user and patient_user.email:
@@ -101,22 +163,31 @@ def payment_process(request, invoice_id, method):
             Your payment has been successfully processed.
 
             Invoice ID: #{invoice.id}
-            Amount: ${invoice.amount}
+            Amount: ${invoice.total_amount}
             Transaction ID: {transaction_id}
             Payment Method: {method.upper()}
 
             Thank you for choosing MediCare.
             """
-            try:
-                send_mail(
-                    subject,
-                    message,
-                    settings.EMAIL_HOST_USER,
-                    [patient_user.email],
-                    fail_silently=True,
-                )
-            except Exception as e:
-                print(f"Error sending email: {e}")
+            import threading
+            
+            def send_async_email(subject, message, recipient_list):
+                try:
+                    send_mail(
+                        subject,
+                        message,
+                        settings.EMAIL_HOST_USER,
+                        recipient_list,
+                        fail_silently=True,
+                    )
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+                    
+            email_thread = threading.Thread(
+                target=send_async_email,
+                args=(subject, message, [patient_user.email])
+            )
+            email_thread.start()
 
         return redirect('payment_success', invoice_id=invoice.id)
     
@@ -141,6 +212,11 @@ def payment_success(request, invoice_id):
     payment = invoice.payments.last()
     return render(request, 'payment_success.html', {'invoice': invoice, 'payment': payment})
 
+# ==============================================================================
+# FEATURE: RECEIPT GENERATION (PDF)
+# PURPOSE: Dynamically generates a PDF receipt for a successful payment using 
+#          ReportLab and returns it as an inline HTTP response.
+# ==============================================================================
 @login_required
 def payment_receipt_pdf(request, payment_id):
     payment = get_object_or_404(Payment, pk=payment_id)
@@ -211,9 +287,17 @@ def payment_receipt_pdf(request, payment_id):
     elements.append(Paragraph("<b>Payment Details:</b>", styles['Heading2']))
     elements.append(Spacer(1, 0.1*inch))
     
+    # Check if we have new line items
+    line_items = invoice.line_items.all()
+    items_desc = ""
+    if line_items.exists():
+        items_desc = ", ".join([f"{item.description} (${item.amount})" for item in line_items])
+    else:
+        items_desc = invoice.items or "N/A"
+
     payment_data = [
         ['Invoice ID:', f'#{invoice.id}'],
-        ['Items:', invoice.items],
+        ['Items:', items_desc],
         ['Payment Method:', payment.get_method_display()],
         ['Amount Paid:', f'${payment.amount}'],
     ]
@@ -242,3 +326,32 @@ def payment_receipt_pdf(request, payment_id):
     response.write(pdf)
     
     return response
+
+from django.utils import timezone
+
+# ==============================================================================
+# FEATURE: INVOICE APPROVAL
+# PURPOSE: Allows Managers and Admins to approve generated invoices before 
+#          patients can pay them.
+# ==============================================================================
+@login_required
+def invoice_approve(request, invoice_id):
+    # Only Admin or Manager can approve
+    has_permission = False
+    if request.user.is_superuser or request.user.role == 'admin':
+        has_permission = True
+    elif request.user.role == 'staff' and hasattr(request.user, 'staff_profile'):
+        if request.user.staff_profile.sub_role == 'manager':
+            has_permission = True
+            
+    if not has_permission:
+        return render(request, 'error_403.html', {'message': "You don't have permission to approve invoices."})
+        
+    invoice = get_object_or_404(Invoice, pk=invoice_id)
+    if not invoice.is_approved:
+        invoice.is_approved = True
+        invoice.approved_by = request.user
+        invoice.approved_at = timezone.now()
+        invoice.save()
+        
+    return redirect('invoice_detail', pk=invoice_id)

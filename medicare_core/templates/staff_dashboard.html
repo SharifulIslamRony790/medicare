@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff Dashboard - MediCare{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="fw-bold mb-1"><i class="fas fa-hospital-user text-primary me-2"></i>Staff Dashboard</h2>
+                        <p class="text-muted mb-0">Welcome back, {{ user.username }}! You are logged in as a Staff Member.</p>
+                    </div>
+                    {% if staff_profile %}
+                    <span class="badge bg-primary fs-5">{{ staff_profile.get_sub_role_display }}</span>
+                    {% else %}
+                    <span class="badge bg-secondary fs-5">General Staff</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Quick Access Based on Sub-Role -->
+    {% if not staff_profile or staff_profile.sub_role == 'receptionist' or staff_profile.sub_role == 'manager' %}
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 hover-scale transition-transform">
+            <div class="card-body text-center p-4">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fas fa-calendar-alt fa-2x text-primary"></i>
+                </div>
+                <h5 class="fw-bold">Appointments</h5>
+                <p class="text-muted small">Manage front-desk scheduling and check-ins.</p>
+                <a href="{% url 'appointment_list' %}" class="btn btn-outline-primary btn-sm w-100 mt-2">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 hover-scale transition-transform">
+            <div class="card-body text-center p-4">
+                <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fas fa-users fa-2x text-info"></i>
+                </div>
+                <h5 class="fw-bold">Patient Records</h5>
+                <p class="text-muted small">Register new patients and view demographics.</p>
+                <a href="{% url 'patient_list' %}" class="btn btn-outline-info btn-sm w-100 mt-2">Manage</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not staff_profile or staff_profile.sub_role == 'pharmacist' or staff_profile.sub_role == 'manager' %}
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 hover-scale transition-transform">
+            <div class="card-body text-center p-4">
+                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fas fa-pills fa-2x text-success"></i>
+                </div>
+                <h5 class="fw-bold">Prescriptions</h5>
+                <p class="text-muted small">Review doctor prescriptions and manage pharmacy.</p>
+                <a href="{% url 'prescription_list' %}" class="btn btn-outline-success btn-sm w-100 mt-2">Manage</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not staff_profile or staff_profile.sub_role == 'cashier' or staff_profile.sub_role == 'manager' %}
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 hover-scale transition-transform">
+            <div class="card-body text-center p-4">
+                <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fas fa-file-invoice-dollar fa-2x text-warning"></i>
+                </div>
+                <h5 class="fw-bold">Billing & Invoices</h5>
+                <p class="text-muted small">Process payments, generate receipts, and track bills.</p>
+                <a href="{% url 'invoice_list' %}" class="btn btn-outline-warning btn-sm w-100 mt-2">Manage</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

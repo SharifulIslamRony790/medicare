@@ -1,33 +1,66 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h3>Contact Us</h3>
+    <div class="col-md-8 col-lg-6">
+        <div class="saas-card p-4 p-md-5 text-center mb-4">
+            <div class="saas-avatar-container mx-auto mb-3" style="width: 64px; height: 64px;">
+                <div class="saas-avatar avatar-indigo w-100 h-100" style="font-size: 1.5rem;"><i
+                        class="fas fa-envelope-open-text"></i></div>
             </div>
-            <div class="card-body">
-                <p>Have questions? We'd love to hear from you.</p>
-                <ul class="list-group list-group-flush mb-4">
-                    <li class="list-group-item"><i class="fas fa-map-marker-alt text-primary me-2"></i> 123 Health
-                        Street, Medical City, NY 10001</li>
-                    <li class="list-group-item"><i class="fas fa-phone text-primary me-2"></i> +1 (555) 123-4567</li>
-                    <li class="list-group-item"><i class="fas fa-envelope text-primary me-2"></i> contact@medicare.com
-                    </li>
-                </ul>
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label">Your Name</label>
-                        <input type="text" class="form-control" placeholder="John Doe">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Message</label>
-                        <textarea class="form-control" rows="4" placeholder="How can we help?"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send Message</button>
-                </form>
+            <h2 class="fw-bold mb-2">Contact Us</h2>
+            <p class="text-muted mb-0">Have questions? We'd love to hear from you.</p>
+        </div>
+
+        <div class="saas-card p-4 p-md-5">
+            <div class="row mb-4">
+                <div class="col-md-4 text-center mb-3 mb-md-0">
+                    <i class="fas fa-map-marker-alt fs-4 mb-2" style="color: #6366f1;"></i>
+                    <h6 class="fw-bold mb-1">Address</h6>
+                    <small class="text-muted">123 Health Ave, Dhaka 1200</small>
+                </div>
+                <div class="col-md-4 text-center mb-3 mb-md-0">
+                    <i class="fas fa-phone-alt fs-4 mb-2" style="color: #6366f1;"></i>
+                    <h6 class="fw-bold mb-1">Phone</h6>
+                    <small class="text-muted">+880 9638 322 586</small>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-envelope fs-4 mb-2" style="color: #6366f1;"></i>
+                    <h6 class="fw-bold mb-1">Email</h6>
+                    <small class="text-muted">support@medicare.com</small>
+                </div>
             </div>
+
+            <hr class="mb-4" style="border-color: var(--border-color);">
+
+            <form method="POST" action="{% url 'contact' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-medium text-muted">Your Name</label>
+                    <input type="text" name="name" required class="form-control px-4 py-2" placeholder="e.g. John Doe"
+                        style="border-radius: 12px; border: 1px solid var(--border-color); box-shadow: none;">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium text-muted">Email Address</label>
+                    <input type="email" name="email" required class="form-control px-4 py-2"
+                        placeholder="e.g. john@example.com"
+                        style="border-radius: 12px; border: 1px solid var(--border-color); box-shadow: none;">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-medium text-muted">Message</label>
+                    <textarea name="message" required class="form-control px-4 py-3" rows="5"
+                        placeholder="How can we help you?"
+                        style="border-radius: 12px; border: 1px solid var(--border-color); box-shadow: none;"></textarea>
+                </div>
+                
+                <div class="mb-4 d-flex justify-content-center">
+                    <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-medium shadow-sm">Send
+                    Message</button>
+            </form>
         </div>
     </div>
 </div>

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center py-4 animate-fade-in">
+    <div class="col-lg-10">
+        <!-- Profile Header -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <div class="bg-primary" style="height: 120px;"></div>
+            <div class="card-body px-5 pb-5 pt-0 text-center text-md-start position-relative">
+                <div class="row align-items-end">
+                    <div class="col-md-auto mb-4 mb-md-0" style="margin-top: -60px;">
+                        {% if doctor.image %}
+                        <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}" class="rounded-circle object-fit-cover shadow border border-4 border-white bg-white" style="width: 150px; height: 150px;">
+                        {% else %}
+                        <div class="avatar-circle bg-light text-primary d-flex align-items-center justify-content-center rounded-circle shadow border border-4 border-white mx-auto mx-md-0" style="width: 150px; height: 150px;">
+                            <i class="fas fa-user-md fa-5x"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md">
+                        <h2 class="fw-bold mb-1">{{ doctor.name }}</h2>
+                        <p class="text-primary fw-medium fs-5 mb-2">{{ doctor.specialty }}</p>
+                        <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start text-muted">
+                            <span><i class="fas fa-phone-alt me-2"></i>{{ doctor.phone }}</span>
+                            <span><i class="fas fa-envelope me-2"></i>{{ doctor.user.email }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-auto mt-4 mt-md-0 text-center">
+                        <a href="{% url 'appointment_add' %}?doctor={{ doctor.id }}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm fw-bold">
+                            <i class="fas fa-calendar-check me-2"></i>Book Appointment
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="row g-4">
+            <!-- About section (can be expanded later) -->
+            <div class="col-md-7">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-info-circle text-primary me-2"></i>About Dr. {{ doctor.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted" style="line-height: 1.8;">
+                            Dr. {{ doctor.name }} is a dedicated and experienced {{ doctor.specialty }} committed to providing the best possible care to patients. With extensive training and a compassionate approach, they ensure that every patient receives personalized and comprehensive medical attention.
+                        </p>
+                        <div class="d-flex align-items-center mt-4 p-3 bg-light rounded-3">
+                            <i class="fas fa-award fa-2x text-warning me-3"></i>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Board Certified</h6>
+                                <small class="text-muted">Specialist in {{ doctor.specialty }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule -->
+            <div class="col-md-5">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white py-3 border-0">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-clock text-primary me-2"></i>Availability</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            {% for schedule in doctor.schedules.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
+                                <span class="fw-medium">{{ schedule.day_of_week }}</span>
+                                <span class="badge bg-light text-dark">{{ schedule.start_time|time:"g:i A" }} - {{ schedule.end_time|time:"g:i A" }}</span>
+                            </li>
+                            {% empty %}
+                            <li class="list-group-item px-4 py-4 text-center text-muted">
+                                Schedule not set
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

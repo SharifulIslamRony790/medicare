@@ -1,34 +1,129 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header bg-warning text-white">
+            <div class="card-header">
                 <h4 class="mb-0">Book Appointment</h4>
             </div>
             <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    {% for field in form %}
-                    <div class="mb-3">
-                        <label class="form-label">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.help_text %}
-                        <div class="form-text">{{ field.help_text }}</div>
+                    <form method="post">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger p-2 mb-3">
+                            <ul class="mb-0 list-unstyled">
+                            {% for error in form.non_field_errors %}
+                                <li><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</li>
+                            {% endfor %}
+                            </ul>
+                        </div>
                         {% endif %}
-                        {% for error in field.errors %}
-                        <div class="text-danger">{{ error }}</div>
+                        {% for field in form %}
+                        <div class="mb-3" {% if field.name == 'time' %}id="time-field-container" style="display:none;"{% endif %}>
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                         {% endfor %}
-                    </div>
-                    {% endfor %}
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-warning text-white">Book Appointment</button>
-                        <a href="{% url 'appointment_list' %}" class="btn btn-secondary">Cancel</a>
-                    </div>
-                </form>
+
+                        <!-- Dynamic Slot Container -->
+                        <div class="mb-3" id="slots-container" style="display:none;">
+                            <label class="form-label text-primary"><i class="fas fa-clock"></i> Available Time Slots</label>
+                            <div id="slots-list" class="d-flex flex-wrap gap-2">
+                                <!-- Slots injected here via JS -->
+                            </div>
+                            <div id="slots-message" class="text-muted mt-2"></div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="submit-btn">Book Appointment</button>
+                            <a href="{% url 'appointment_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const doctorField = document.getElementById('id_doctor');
+    const dateField = document.getElementById('id_date');
+    const timeField = document.getElementById('id_time');
+    const form = document.querySelector('form');
+    
+    const slotsContainer = document.getElementById('slots-container');
+    const slotsList = document.getElementById('slots-list');
+    const slotsMessage = document.getElementById('slots-message');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    function fetchSlots() {
+        let doctorId = doctorField ? doctorField.value : null;
+        let dateVal = dateField ? dateField.value : null;
+        
+        if (doctorId && dateVal) {
+            slotsContainer.style.display = 'block';
+            slotsList.innerHTML = '<span class="spinner-border spinner-border-sm text-primary" role="status"></span> <span class="ms-2">Checking schedule...</span>';
+            slotsMessage.innerHTML = '';
+            submitBtn.disabled = true;
+            
+            fetch(`/api/available-slots/?doctor_id=${doctorId}&date=${dateVal}`)
+                .then(response => response.json())
+                .then(data => {
+                    slotsList.innerHTML = '';
+                    if (data.error) {
+                        slotsMessage.innerHTML = `<span class="text-danger">${data.error}</span>`;
+                        return;
+                    }
+                    
+                    if (data.slots && data.slots.length > 0) {
+                        data.slots.forEach(slot => {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'btn btn-outline-primary slot-btn';
+                            btn.textContent = slot;
+                            
+                            // Keep previously selected value if it exists
+                            if (timeField.value && timeField.value.startsWith(slot)) {
+                                btn.classList.add('active');
+                                submitBtn.disabled = false;
+                            }
+                            
+                            btn.addEventListener('click', function() {
+                                document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('active'));
+                                this.classList.add('active');
+                                timeField.value = slot + ':00';
+                                submitBtn.disabled = false;
+                            });
+                            slotsList.appendChild(btn);
+                        });
+                    } else {
+                        slotsMessage.innerHTML = `<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> ${data.message || 'No slots available for this date.'}</span>`;
+                        timeField.value = '';
+                    }
+                })
+                .catch(err => {
+                    slotsList.innerHTML = '';
+                    slotsMessage.innerHTML = `<span class="text-danger">Error connecting to server.</span>`;
+                });
+        } else {
+            slotsContainer.style.display = 'none';
+            timeField.value = '';
+            submitBtn.disabled = false; // allow normal validation to run
+        }
+    }
+
+    if (doctorField && dateField) {
+        doctorField.addEventListener('change', fetchSlots);
+        dateField.addEventListener('change', fetchSlots);
+        if (doctorField.value && dateField.value) fetchSlots();
+    }
+});
+</script>
 {% endblock %}

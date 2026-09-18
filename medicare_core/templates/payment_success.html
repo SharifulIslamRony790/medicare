@@ -1,44 +1,163 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 text-center">
-        <div class="card shadow-lg border-0 p-5">
-            <div class="mb-4 text-success">
-                <i class="fas fa-check-circle fa-5x"></i>
-            </div>
-            <h2 class="fw-bold mb-3">Payment Successful!</h2>
-            <p class="text-muted mb-4">Thank you for your payment. Your transaction has been completed successfully.</p>
+<script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
 
-            <div class="bg-light p-4 rounded-3 mb-4 text-start">
-                <div class="row mb-2">
-                    <div class="col-6 text-muted">Transaction ID:</div>
-                    <div class="col-6 fw-bold text-end text-break">{{ payment.transaction_id }}</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-6 text-muted">Date:</div>
-                    <div class="col-6 fw-bold text-end">{{ payment.timestamp }}</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-6 text-muted">Method:</div>
-                    <div class="col-6 fw-bold text-end">{{ payment.get_method_display }}</div>
-                </div>
-                <div class="row border-top pt-2 mt-2">
-                    <div class="col-6 fw-bold">Amount Paid:</div>
-                    <div class="col-6 fw-bold text-end text-primary">${{ payment.amount }}</div>
-                </div>
-            </div>
+<style>
+    .letter-spacing-1 { letter-spacing: 1px; }
+    .border-dashed { border-bottom: 1px dashed #e2e8f0 !important; }
+    
+    .animate-pop {
+        animation: pop-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        transform: scale(0);
+    }
 
-            <div class="d-grid gap-2">
-                <a href="{% url 'payment_receipt_pdf' payment.id %}" class="btn btn-success" target="_blank">
-                    <i class="fas fa-download"></i> Download Receipt
-                </a>
-                <a href="{% url 'payment_receipt_pdf' payment.id %}" class="btn btn-outline-success" target="_blank"
-                    onclick="setTimeout(function(){ window.print(); }, 500);">
-                    <i class="fas fa-print"></i> Print Receipt
-                </a>
-                <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-primary">View Invoice</a>
-                <a href="{% url 'home' %}" class="btn btn-outline-secondary">Return to Dashboard</a>
+    @keyframes pop-in {
+        0% { transform: scale(0); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    @media print {
+        body { background-color: #fff !important; font-size: 12px !important; }
+        .navbar, .sidebar, footer, .footer, .d-print-none { display: none !important; }
+        .card { border: none !important; box-shadow: none !important; margin: 0 !important; border-radius: 0 !important; }
+        .container, .col-lg-8 { width: 100% !important; max-width: 100% !important; flex: none !important; padding: 0 !important; }
+        .card-body { padding: 1rem !important; }
+        .bg-success { background-color: #10b981 !important; color: white !important; padding: 1rem !important; }
+        .text-break { word-break: break-all !important; }
+        
+        /* Compact spacing for print to fit on one page */
+        .p-4, .p-5 { padding: 0.5rem 1rem !important; }
+        .py-4, .py-5 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+        .px-4, .px-5 { padding-left: 1rem !important; padding-right: 1rem !important; }
+        .mb-5, .my-5 { margin-bottom: 1rem !important; }
+        .mb-4, .my-4 { margin-bottom: 0.5rem !important; }
+        .mt-5, .my-5 { margin-top: 1rem !important; }
+        .mt-4, .my-4 { margin-top: 0.5rem !important; }
+        
+        /* Fix Table Overflow */
+        .table-responsive { overflow: visible !important; margin-bottom: 1rem !important; }
+        tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+        
+        /* Row alignment fixes */
+        .row { display: flex !important; flex-wrap: nowrap !important; align-items: flex-start !important; page-break-inside: avoid !important; }
+        .col-sm-6 { width: 50% !important; flex: 0 0 50% !important; max-width: 50% !important; }
+        .col-md-6 { width: 50% !important; flex: 0 0 50% !important; max-width: 50% !important; }
+        .col-sm-8 { width: 66.666% !important; flex: 0 0 66.666% !important; max-width: 66.666% !important; }
+        .text-sm-end { text-align: right !important; }
+        .mt-sm-0 { margin-top: 0 !important; }
+        
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <!-- Header (Success Banner) -->
+                <div class="bg-success text-white text-center p-5">
+                    <i class="fas fa-check-circle fa-4x mb-3 animate-pop"></i>
+                    <h2 class="fw-bold mb-0">Payment Successful!</h2>
+                    <p class="mb-0 opacity-75 mt-2">Your transaction has been securely processed.</p>
+                </div>
+                
+                <!-- Receipt Body -->
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <div class="text-center mb-5 border-bottom pb-4">
+                        <h5 class="text-uppercase text-muted fw-bold letter-spacing-1 mb-2">Official Receipt</h5>
+                        <div class="text-muted">Receipt No: <span class="text-dark fw-bold">RCPT-{{ payment.id|stringformat:"05d" }}</span></div>
+                    </div>
+                    
+                    <div class="row mb-5">
+                        <div class="col-sm-6 mb-4 mb-sm-0">
+                            <h6 class="text-uppercase text-muted fw-bold mb-3 small">Billed To</h6>
+                            <h5 class="fw-bold text-dark mb-2">{{ invoice.patient.name }}</h5>
+                            <p class="text-muted small mb-0 lh-lg">
+                                {% if invoice.patient.phone %}<i class="fas fa-phone-alt text-success me-2"></i>{{ invoice.patient.phone }}<br>{% endif %}
+                                <i class="fas fa-file-invoice text-success me-2"></i>Invoice #INV-{{ invoice.id|stringformat:"05d" }}
+                            </p>
+                        </div>
+                        <div class="col-sm-6 d-flex flex-column align-items-sm-end mt-4 mt-sm-0">
+                            <h6 class="text-uppercase text-muted fw-bold mb-3 small">Payment Details</h6>
+                            <table class="table table-borderless table-sm mb-0 text-start w-auto">
+                                <tr>
+                                    <td class="text-muted small py-1 pe-3 ps-0">Date:</td>
+                                    <td class="text-dark fw-bold small py-1 px-0">{{ payment.timestamp|date:"M d, Y h:i A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted small py-1 pe-3 ps-0">Method:</td>
+                                    <td class="text-dark fw-bold small py-1 px-0">{{ payment.get_method_display }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted small py-1 pe-3 ps-0 align-top">Trans ID:</td>
+                                    <td class="text-dark fw-bold small py-1 px-0 text-break" style="max-width: 180px;">{{ payment.transaction_id }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive mb-4">
+                        <table class="table mb-0 align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="border-0 rounded-start py-3 ps-4 text-muted font-monospace small text-uppercase">Description</th>
+                                    <th class="border-0 rounded-end py-3 pe-4 text-muted font-monospace small text-uppercase text-end" style="width: 150px;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if invoice.line_items.all %}
+                                    {% for item in invoice.line_items.all %}
+                                    <tr>
+                                        <td class="py-3 ps-4 border-dashed text-dark fw-medium">{{ item.description }}</td>
+                                        <td class="py-3 pe-4 border-dashed text-dark fw-bold text-end">${{ item.amount|floatformat:2 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td class="py-3 ps-4 border-dashed text-dark fw-medium">{{ invoice.items|linebreaksbr }}</td>
+                                        <td class="py-3 pe-4 border-dashed text-dark fw-bold text-end">${{ invoice.total_amount|floatformat:2 }}</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="row justify-content-end mb-4 border-top pt-4">
+                        <div class="col-sm-8 col-md-6">
+                            <div class="d-flex justify-content-between align-items-center bg-light p-3 px-4 rounded-3 border">
+                                <span class="fw-bold text-muted text-uppercase letter-spacing-1">Total Paid</span>
+                                <span class="fw-bolder text-success fs-3">${{ payment.amount|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center d-print-none mt-5 pt-3">
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <button class="btn btn-success px-4 py-2 rounded-pill fw-bold shadow-sm" onclick="window.print()">
+                                <i class="fas fa-print me-2"></i> Print Receipt
+                            </button>
+                            <a href="{% url 'payment_receipt_pdf' payment.id %}" class="btn btn-outline-success px-4 py-2 rounded-pill fw-bold shadow-sm" target="_blank">
+                                <i class="fas fa-download me-2"></i> Download PDF
+                            </a>
+                            <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-outline-primary px-4 py-2 rounded-pill fw-bold shadow-sm">
+                                <i class="fas fa-file-invoice me-2"></i> View Invoice
+                            </a>
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-bold shadow-sm">
+                                Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="card-footer bg-light text-center border-0 p-4">
+                    <p class="text-muted small mb-0 fw-medium"><i class="fas fa-heart text-danger me-1"></i> Thank you for choosing MediCare. This is an electronically generated receipt.</p>
+                </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Access Denied - MediCare{% endblock %}
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 text-center">
+            <div class="card shadow-sm border-0 rounded-lg">
+                <div class="card-body p-5">
+                    <div class="mb-4 text-danger">
+                        <i class="fas fa-lock fa-5x mb-3"></i>
+                    </div>
+                    <h2 class="font-weight-bold text-dark mb-3">Access Denied</h2>
+                    <p class="lead text-muted mb-4">
+                        {{ message|default:"You do not have permission to perform this action or access this page." }}
+                    </p>
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary mr-2 px-4 py-2">
+                        <i class="fas fa-arrow-left mr-2"></i> Go Back
+                    </a>
+                    <a href="{% url 'home' %}" class="btn btn-primary px-4 py-2">
+                        <i class="fas fa-home mr-2"></i> Return Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

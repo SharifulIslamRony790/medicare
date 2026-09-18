@@ -1,42 +1,51 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12 text-center mb-5">
-        <h1 class="display-4">Support Center</h1>
-        <p class="lead">We are here to help you 24/7.</p>
+<div class="row justify-content-center mb-5">
+    <div class="col-md-8 text-center">
+        <div class="saas-avatar-container mx-auto mb-3" style="width: 64px; height: 64px;">
+            <div class="saas-avatar avatar-blue w-100 h-100" style="font-size: 1.5rem;"><i class="fas fa-headset"></i></div>
+        </div>
+        <h2 class="fw-bold mb-2">Support Center</h2>
+        <p class="text-muted mb-0">We are here to help you 24/7 with any issues or questions.</p>
     </div>
 </div>
 
-<div class="row g-4">
-    <div class="col-md-4">
-        <div class="card h-100 text-center p-4 border-primary">
-            <div class="card-body">
-                <i class="fas fa-book-open fa-3x text-primary mb-3"></i>
-                <h4>User Guide</h4>
-                <p>Read our documentation to learn how to use the app.</p>
-                <a href="#" class="btn btn-outline-primary">Read Guide</a>
+<div class="row g-4 justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="saas-card h-100 text-center p-4 p-md-5 transition-hover" style="border-top: 4px solid #3b82f6;">
+            <div class="mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 60px; height: 60px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; font-size: 1.5rem;">
+                    <i class="fas fa-book-open"></i>
+                </div>
             </div>
+            <h5 class="fw-bold mb-3">User Guide</h5>
+            <p class="text-muted mb-4" style="font-size: 0.9rem;">Read our documentation to learn how to navigate the portal.</p>
+            <a href="{% url 'user_guide' %}" class="btn btn-outline-primary rounded-pill px-4 fw-medium" style="border-color: #3b82f6; color: #3b82f6;">Read Guide</a>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card h-100 text-center p-4 border-success">
-            <div class="card-body">
-                <i class="fas fa-comments fa-3x text-success mb-3"></i>
-                <h4>Live Chat</h4>
-                <p>Chat with our support team in real-time.</p>
-                <a href="#" class="btn btn-outline-success">Start Chat</a>
+    <div class="col-md-6 col-lg-4">
+        <div class="saas-card h-100 text-center p-4 p-md-5 transition-hover" style="border-top: 4px solid #10b981;">
+            <div class="mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 60px; height: 60px; background-color: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 1.5rem;">
+                    <i class="fas fa-comments"></i>
+                </div>
             </div>
+            <h5 class="fw-bold mb-3">Live Chat</h5>
+            <p class="text-muted mb-4" style="font-size: 0.9rem;">Chat with our support team in real-time for immediate help.</p>
+            <a href="{% url 'live_chat' %}" class="btn btn-outline-success rounded-pill px-4 fw-medium" style="border-color: #10b981; color: #10b981;">Start Chat</a>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card h-100 text-center p-4 border-warning">
-            <div class="card-body">
-                <i class="fas fa-question-circle fa-3x text-warning mb-3"></i>
-                <h4>FAQs</h4>
-                <p>Find answers to frequently asked questions.</p>
-                <a href="#" class="btn btn-outline-warning">View FAQs</a>
+    <div class="col-md-6 col-lg-4">
+        <div class="saas-card h-100 text-center p-4 p-md-5 transition-hover" style="border-top: 4px solid #f59e0b;">
+            <div class="mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 60px; height: 60px; background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; font-size: 1.5rem;">
+                    <i class="fas fa-question-circle"></i>
+                </div>
             </div>
+            <h5 class="fw-bold mb-3">FAQs</h5>
+            <p class="text-muted mb-4" style="font-size: 0.9rem;">Find answers to frequently asked questions from users.</p>
+            <a href="{% url 'faqs' %}" class="btn btn-outline-warning rounded-pill px-4 fw-medium" style="border-color: #f59e0b; color: #d97706;">View FAQs</a>
         </div>
     </div>
 </div>

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in py-5">
+    <div class="col-md-10 col-lg-8">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-5">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-calendar-times fa-3x text-primary"></i>
+                    </div>
+                    <h2 class="fw-bold mb-1">Add Leave</h2>
+                    <p class="text-muted">Select a day you will be unavailable</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row g-4 mb-4">
+                        {% for field in form %}
+                            <div class="col-md-12">
+                                <label for="{{ field.id_for_label }}" class="form-label fw-medium">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                <div class="form-text text-muted small"><i class="fas fa-info-circle me-1"></i>{{ field.help_text }}</div>
+                                {% endif %}
+                                {% if field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ field.errors|striptags }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2 mt-5">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm">
+                            Save Leave <i class="fas fa-check-circle ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

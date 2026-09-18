@@ -6,7 +6,10 @@
         <div class="text-center mb-5">
             <h2 class="fw-bold">Select Payment Method</h2>
             <p class="text-muted">Choose how you want to pay for Invoice #{{ invoice.id }}</p>
-            <h3 class="text-primary fw-bold">${{ invoice.amount }}</h3>
+                <div class="mb-4">
+                    <h6 class="text-uppercase text-muted small fw-bold">Total Amount Due</h6>
+                    <h3 class="text-primary fw-bold">${{ invoice.total_amount }}</h3>
+                </div>
         </div>
 
         <div class="row g-4">

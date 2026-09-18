@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}User Guide - MediCare{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate-fade-in">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-4">
+                <div class="icon-shape bg-primary bg-opacity-10 text-primary rounded-circle me-3" style="width: 50px; height: 50px; font-size: 1.5rem;">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h2 class="fw-bold mb-0 text-dark">User Guide</h2>
+            </div>
+            
+            <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5">
+                <h4 class="fw-bold text-dark mb-4">How to use MediCare</h4>
+                
+                <div class="mb-5">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-calendar-check text-primary fs-4 me-3"></i>
+                        <h5 class="text-dark fw-bold mb-0">Booking Appointments</h5>
+                    </div>
+                    <p class="text-muted ms-5">Navigate to the Appointments section and click "Book Appointment". Select a doctor, choose an available date, and pick a time slot to confirm your booking.</p>
+                </div>
+                
+                <div class="mb-5">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-file-prescription text-primary fs-4 me-3"></i>
+                        <h5 class="text-dark fw-bold mb-0">Viewing Prescriptions</h5>
+                    </div>
+                    <p class="text-muted ms-5">You can view all your prescriptions under the "Prescriptions" tab. Click on the print icon to download a PDF or print a physical copy for your records.</p>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-file-invoice-dollar text-primary fs-4 me-3"></i>
+                        <h5 class="text-dark fw-bold mb-0">Billing & Payments</h5>
+                    </div>
+                    <p class="text-muted ms-5">In the Billing section, you can see all your invoices. Click "Pay" on any pending invoice to securely complete your payment online using a card or mobile banking.</p>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-start">
+                <a href="{% url 'support' %}" class="btn btn-outline-secondary rounded-pill px-4 fw-medium"><i class="fas fa-arrow-left me-2"></i>Back to Support</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

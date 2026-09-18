@@ -28,3 +28,4 @@ secrets.json
 *.swp
 *.swo
 secrets.json
+datadump.json

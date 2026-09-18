@@ -31,10 +31,22 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Security Settings for Production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
 
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,17 +54,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles', 
 
+
     # Costomize 
     'rest_framework',
     'django_filters',
 
     # Costomize Apps
+    'dashboard',
     'users',
     'patients',
     'doctors',
     'appointments',
     'prescriptions',
     'billing',
+    'staff',
 
     # Allauth
     'django.contrib.sites',
@@ -99,8 +114,12 @@ WSGI_APPLICATION = 'medicare_core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.getenv('DB_NAME', BASE_DIR / 'db.sqlite3'),
+        'USER': os.getenv('DB_USER', ''),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', ''),
+        'PORT': os.getenv('DB_PORT', ''),
     }
 }
 
@@ -178,6 +197,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
+    'users.backends.EmailOrUsernameModelBackend',
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
@@ -199,3 +219,98 @@ SOCIALACCOUNT_PROVIDERS = {
 # Redirects
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Unfold Admin Configuration
+UNFOLD = {
+    "SITE_TITLE": "MediCare Portal",
+    "SITE_HEADER": "MediCare Admin",
+    "SITE_URL": "/",
+    "SITE_SYMBOL": "medical_services",
+    "STYLES": [
+        lambda request: __import__('django.templatetags.static').templatetags.static.static("css/saas_theme.css"),
+    ],
+    "DASHBOARD_CALLBACK": "dashboard.views.dashboard_callback",
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Clinical Management",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Patients",
+                        "icon": "people",
+                        "link": "/dashboard/patients/patient/",
+                    },
+                    {
+                        "title": "Appointments",
+                        "icon": "event",
+                        "link": "/dashboard/appointments/appointment/",
+                    },
+                    {
+                        "title": "Prescriptions",
+                        "icon": "medication",
+                        "link": "/dashboard/prescriptions/prescription/",
+                    },
+                ],
+            },
+            {
+                "title": "Financial",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Invoices",
+                        "icon": "receipt",
+                        "link": "/dashboard/billing/invoice/",
+                    },
+                    {
+                        "title": "Payments",
+                        "icon": "payments",
+                        "link": "/dashboard/billing/payment/",
+                    },
+                ],
+            },
+            {
+                "title": "System & Users",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Doctors",
+                        "icon": "medical_services",
+                        "link": "/dashboard/doctors/doctor/",
+                    },
+                    {
+                        "title": "Staff",
+                        "icon": "badge",
+                        "link": "/dashboard/staff/staff/",
+                    },
+                    {
+                        "title": "System Users",
+                        "icon": "admin_panel_settings",
+                        "link": "/dashboard/users/user/",
+                    },
+                    {
+                        "title": "Contact Messages",
+                        "icon": "mark_email_unread",
+                        "link": "/dashboard/dashboard/contactmessage/",
+                    },
+                ],
+            },
+        ],
+    },
+    "COLORS": {
+        "primary": {
+            "50": "238 242 255",
+            "100": "224 231 255",
+            "200": "199 210 254",
+            "300": "165 180 252",
+            "400": "129 140 248",
+            "500": "99 102 241",
+            "600": "79 70 229",
+            "700": "67 56 202",
+            "800": "55 48 163",
+            "900": "49 46 129",
+        },
+    },
+}

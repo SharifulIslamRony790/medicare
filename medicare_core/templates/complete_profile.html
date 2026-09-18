@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .onboarding-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .btn-gradient {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border: none;
+        color: white;
+    }
+    .btn-gradient:hover {
+        background: linear-gradient(135deg, #0056b3, #004085);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+    }
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background-color: #e9ecef;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        background-color: #0d6efd;
+        width: 50%;
+        transition: width 0.5s ease;
+    }
+</style>
+
+<div class="row justify-content-center py-5 animate-fade-in">
+    <div class="onboarding-container">
+        
+        <!-- Progress Indicator -->
+        <div class="mb-5 text-center">
+            <h5 class="text-primary fw-bold mb-2">Step 2 of 2</h5>
+            <div class="progress-bar-custom mx-auto mb-3" style="max-width: 200px;">
+                <div class="progress-bar-fill" style="width: 100%;"></div>
+            </div>
+            <h2 class="fw-bold text-dark">Complete Your Profile</h2>
+            <p class="text-muted">Just a few more details so we can personalize your medical experience.</p>
+        </div>
+
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-4 p-md-5">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium text-secondary small">Age <span class="text-danger">*</span></label>
+                            {{ form.age }}
+                            {% for error in form.age.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-medium text-secondary small">Gender <span class="text-danger">*</span></label>
+                            {{ form.gender }}
+                            {% for error in form.gender.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-secondary small">Phone Number <span class="text-danger">*</span></label>
+                        {{ form.phone }}
+                        {% for error in form.phone.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-secondary small">Address <span class="text-danger">*</span></label>
+                        {{ form.address }}
+                        {% for error in form.address.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-secondary small">Medical History <span class="text-muted fw-normal">(Optional)</span></label>
+                        {{ form.medical_history }}
+                        <div class="form-text small">Any allergies or chronic conditions we should know about?</div>
+                        {% for error in form.medical_history.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium text-secondary small">Profile Picture <span class="text-muted fw-normal">(Optional)</span></label>
+                        {{ form.image }}
+                        {% for error in form.image.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient w-100 py-3 rounded-pill fw-bold fs-5 transition-all mt-3">
+                        Finish & Enter Dashboard <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </form>
+            </div>
+            
+            <div class="card-footer bg-light border-0 text-center py-3 rounded-bottom-4">
+                <p class="mb-0 text-muted small"><i class="fas fa-lock me-1"></i> Your medical information is encrypted and secure.</p>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'home' %}" class="text-muted text-decoration-none small hover-primary">
+                Skip for now (I'll do this later)
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

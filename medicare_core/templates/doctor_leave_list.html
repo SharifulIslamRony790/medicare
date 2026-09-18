@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4 animate-fade-in">
+    <h2 class="text-primary fw-bold"><i class="fas fa-calendar-times"></i> My Leaves</h2>
+    <a href="{% url 'doctor_leave_add' %}" class="btn btn-primary shadow-sm"><i class="fas fa-plus"></i> Add Leave</a>
+</div>
+
+<div class="card shadow-sm border-0 animate-fade-in">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted">
+                    <tr>
+                        <th class="ps-4">Date</th>
+                        <th>Reason</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                    <tr>
+                        <td class="ps-4 fw-medium">{{ leave.date }}</td>
+                        <td class="text-muted">{{ leave.reason|default:"No reason provided" }}</td>
+                        <td>
+                            <a href="{% url 'doctor_leave_delete' leave.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this leave?')">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4 text-muted">No leaves found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

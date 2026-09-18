@@ -1,13 +1,21 @@
 from django import forms
-from .models import Doctor
+from .models import Doctor, DoctorLeave
 
 class DoctorForm(forms.ModelForm):
     class Meta:
         model = Doctor
-        fields = '__all__'
+        fields = ['user', 'name', 'phone', 'specialty', 'image']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
             'specialty': forms.TextInput(attrs={'class': 'form-control'}),
-            'available_days': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Mon, Wed, Fri'}),
+        }
+
+class DoctorLeaveForm(forms.ModelForm):
+    class Meta:
+        model = DoctorLeave
+        fields = ['date', 'reason']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'reason': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Optional reason'})
         }

@@ -1,11 +1,20 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4 animate-fade-in">
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4 animate-fade-in">
     <h2 class="text-primary fw-bold"><i class="fas fa-user-md"></i> Doctors</h2>
     {% if user.role == 'admin' or user.role == 'staff' %}
     <a href="{% url 'doctor_add' %}" class="btn btn-primary shadow-sm"><i class="fas fa-plus"></i> Add Doctor</a>
     {% endif %}
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 offset-md-3">
+        <form method="GET" action="{% url 'doctor_list' %}" class="d-flex shadow-sm rounded-pill overflow-hidden bg-white">
+            <input type="text" name="q" value="{{ query|default:'' }}" class="form-control border-0 px-4 py-3 shadow-none" placeholder="Search doctors by name or specialty...">
+            <button type="submit" class="btn btn-primary px-4 fw-bold"><i class="fas fa-search me-2"></i>Search</button>
+        </form>
+    </div>
 </div>
 
 <div class="row g-4 animate-fade-in">
@@ -14,21 +23,29 @@
         <div class="card h-100 border-0 shadow-sm hover-shadow">
             <div class="card-body text-center p-4">
                 <div class="mb-3">
-                    <div class="avatar-circle bg-light text-primary mx-auto d-flex align-items-center justify-content-center rounded-circle"
-                        style="width: 80px; height: 80px;">
+                    {% if doctor.image %}
+                    <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}" class="rounded-circle object-fit-cover shadow-sm" style="width: 100px; height: 100px;">
+                    {% else %}
+                    <div class="avatar-circle bg-light text-primary mx-auto d-flex align-items-center justify-content-center rounded-circle" style="width: 100px; height: 100px;">
                         <i class="fas fa-user-md fa-3x"></i>
                     </div>
+                    {% endif %}
                 </div>
                 <h5 class="card-title fw-bold mb-1">{{ doctor.name }}</h5>
                 <p class="text-muted mb-2">{{ doctor.specialty }}</p>
-                <span class="badge bg-info text-dark mb-3"><i class="fas fa-phone-alt"></i> {{ doctor.phone }}</span>
-                <div class="card-text text-start mt-3">
-                    <small class="text-muted d-block"><i class="far fa-calendar-alt me-2"></i>Available:</small>
-                    <p class="mb-0 fw-medium">{{ doctor.available_days }}</p>
+                <div class="mt-3">
+                    <p class="mb-0 text-muted small"><i class="fas fa-calendar-alt me-2"></i>Availability</p>
+                    <p class="mb-0 fw-medium">
+                        {% for schedule in doctor.schedules.all %}
+                            {{ schedule.day_of_week|slice:":3" }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Schedule not set
+                        {% endfor %}
+                    </p>
                 </div>
             </div>
             <div class="card-footer bg-white border-top-0 text-center pb-4">
-                <a href="#" class="btn btn-outline-primary btn-sm rounded-pill px-4">View Profile</a>
+                <a href="{% url 'doctor_detail' doctor.id %}" class="btn btn-outline-primary rounded-pill px-4 fw-medium">View Profile</a>
             </div>
         </div>
     </div>

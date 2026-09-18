@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4 animate-fade-in">
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4 animate-fade-in">
     <h2 class="text-primary fw-bold"><i class="fas fa-user-injured"></i> Patients</h2>
+    {% if user.can_register_patients %}
     <a href="{% url 'patient_add' %}" class="btn btn-primary shadow-sm"><i class="fas fa-plus"></i> Add Patient</a>
+    {% endif %}
 </div>
 
 <div class="card shadow-sm border-0 animate-fade-in">
@@ -22,7 +24,8 @@
         </form>
     </div>
     <div class="card-body p-0">
-        <div class="table-responsive">
+        <!-- Desktop View (Table) -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light text-muted">
                     <tr>
@@ -30,6 +33,7 @@
                         <th>Age/Gender</th>
                         <th>Phone</th>
                         <th>Address</th>
+                        <th>Registered By</th>
                         <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
@@ -40,6 +44,15 @@
                         <td>{{ patient.age }} / {{ patient.gender }}</td>
                         <td>{{ patient.phone }}</td>
                         <td>{{ patient.address|truncatechars:30 }}</td>
+                        <td>
+                            {% if patient.created_by %}
+                                <span class="badge bg-secondary opacity-75" title="Added by {{ patient.created_by.role|title }}">
+                                    {{ patient.created_by.username }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted small">System</span>
+                            {% endif %}
+                        </td>
                         <td class="text-end pe-4">
                             <a href="{% url 'patient_detail' patient.pk %}"
                                 class="btn btn-sm btn-outline-info rounded-pill"><i class="fas fa-eye"></i> View</a>
@@ -52,6 +65,38 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile View (Cards) -->
+        <div class="d-block d-md-none p-3 bg-light rounded-bottom-4">
+            {% for patient in patients %}
+            <div class="card mb-3 shadow-sm border-0">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                        <h6 class="text-primary fw-bold mb-0"><i class="fas fa-user-injured me-1"></i> {{ patient.name }}</h6>
+                        <a href="{% url 'patient_detail' patient.pk %}" class="btn btn-sm btn-outline-info rounded-pill px-3"><i class="fas fa-eye me-1"></i> View</a>
+                    </div>
+                    
+                    <div class="row g-2 mt-2">
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Age/Gender</span>
+                            <span class="text-dark fw-medium">{{ patient.age }} / {{ patient.gender }}</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Phone</span>
+                            <span class="text-dark fw-medium">{{ patient.phone }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <span class="text-muted small d-block mb-1"><i class="fas fa-map-marker-alt me-1"></i> Address</span>
+                        <span class="text-dark small">{{ patient.address|truncatechars:50 }}</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4 text-muted bg-white rounded-3 shadow-sm border">No patients found.</div>
+            {% endfor %}
         </div>
     </div>
 </div>

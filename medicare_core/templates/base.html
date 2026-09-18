@@ -5,126 +5,256 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}MediCare{% endblock %}</title>
+    <!-- Replace Bootstrap 5 CDN to make sure it's fast -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2.3">
 </head>
 
 <body>
 
     <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="fas fa-heartbeat me-2"></i>MediCare
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <div class="container{% if user.is_authenticated %}-fluid px-3 px-md-4 flex-nowrap{% endif %}">
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                <button type="button" id="sidebarCollapse" class="sidebar-toggle-btn me-3" aria-label="Toggle Sidebar">
+                    <i class="fas fa-align-left text-primary fs-5"></i>
+                </button>
+                {% endif %}
+                <a class="navbar-brand mb-0" href="{% url 'home' %}">
+                    <i class="fas fa-heartbeat me-2"></i>MediCare
+                </a>
+            </div>
+            {% if not user.is_authenticated %}
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    {% if user.role == 'admin' or user.role == 'staff' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'patient_list' %}">Patients</a></li>
-                    {% endif %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'doctor_list' %}">Doctors</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'appointment_list' %}">Appointments</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'prescription_list' %}">Prescriptions</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'invoice_list' %}">Billing</a></li>
-                    {% if user.is_authenticated %}
-                    <li class="nav-item ms-lg-3">
+            {% endif %}
+            
+            <div class="{% if not user.is_authenticated %}collapse navbar-collapse{% else %}d-flex ms-auto{% endif %}" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center {% if user.is_authenticated %}flex-row{% endif %}">
+                    {% if not user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'doctor_list' %}">Find a Doctor</a></li>
+                    <li class="nav-item ms-lg-2"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                    <li class="nav-item ms-lg-2"><a class="nav-link btn btn-primary text-white px-4 py-2 rounded-pill"
+                            href="{% url 'signup' %}">Sign Up</a></li>
+                    {% else %}
+                    <li class="nav-item ms-3 ms-lg-3">
                         <div class="dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                            <a class="nav-link dropdown-toggle d-flex align-items-center p-0 p-lg-2 border-0" href="#" role="button"
+                                data-bs-toggle="dropdown">
+                                {% if user.role == 'patient' and user.patient_profile.image.name %}
+                                    <img src="{{ user.patient_profile.image.url }}" alt="{{ user.username }}" class="rounded-circle me-2 object-fit-cover shadow-sm border border-2 border-white" style="width: 32px; height: 32px;">
+                                {% elif user.role == 'doctor' and user.doctor_profile.image.name %}
+                                    <img src="{{ user.doctor_profile.image.url }}" alt="{{ user.username }}" class="rounded-circle me-2 object-fit-cover shadow-sm border border-2 border-white" style="width: 32px; height: 32px;">
+                                {% elif user.role == 'staff' and user.staff_profile.image.name %}
+                                    <img src="{{ user.staff_profile.image.url }}" alt="{{ user.username }}" class="rounded-circle me-2 object-fit-cover shadow-sm border border-2 border-white" style="width: 32px; height: 32px;">
+                                {% else %}
+                                    <div class="icon-shape bg-primary text-white rounded-circle me-2 shadow-sm border border-2 border-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 14px;">
+                                        {{ user.username|make_list|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <span class="fw-bold d-none d-md-inline-block ms-1">{{ user.username }}</span>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
-                                <li><a class="dropdown-item" href="{% url 'settings' %}"><i
-                                            class="fas fa-cog me-2 text-muted"></i>Settings</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg position-absolute p-2"
+                                style="border-radius: 16px; min-width: 240px; top: 110%; right: 0;">
+                                <!-- User Info Header -->
                                 <li>
-                                    <hr class="dropdown-divider">
+                                    <div class="px-3 py-2 d-flex align-items-center">
+                                        <div class="me-3">
+                                            {% if user.role == 'patient' and user.patient_profile.image.name %}
+                                                <img src="{{ user.patient_profile.image.url }}" alt="{{ user.username }}" class="rounded-circle object-fit-cover shadow-sm border border-2 border-white" style="width: 45px; height: 45px;">
+                                            {% elif user.role == 'doctor' and user.doctor_profile.image.name %}
+                                                <img src="{{ user.doctor_profile.image.url }}" alt="{{ user.username }}" class="rounded-circle object-fit-cover shadow-sm border border-2 border-white" style="width: 45px; height: 45px;">
+                                            {% elif user.role == 'staff' and user.staff_profile.image.name %}
+                                                <img src="{{ user.staff_profile.image.url }}" alt="{{ user.username }}" class="rounded-circle object-fit-cover shadow-sm border border-2 border-white" style="width: 45px; height: 45px;">
+                                            {% else %}
+                                                <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm border border-2 border-white fw-bold" style="width: 45px; height: 45px; font-size: 1.2rem;">
+                                                    {{ user.username|make_list|first|upper }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold text-dark">{{ user.username }}</h6>
+                                            <small class="text-muted" style="text-transform: capitalize;">{{ user.role|default:"User" }}</small>
+                                        </div>
+                                    </div>
                                 </li>
-                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i
-                                            class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                <li><hr class="dropdown-divider my-2"></li>
+                                <!-- Settings Option -->
+                                <li>
+                                    <a class="dropdown-item rounded-3 py-2 px-3 mb-1 d-flex align-items-center custom-dropdown-item" href="{% url 'settings' %}">
+                                        <div class="dropdown-icon-box me-3">
+                                            <i class="fas fa-cog"></i>
+                                        </div>
+                                        <span class="fw-medium">Account Settings</span>
+                                    </a>
+                                </li>
+                                <!-- Logout Option -->
+                                <li>
+                                    <a class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center custom-dropdown-item text-danger logout-item" href="{% url 'logout' %}">
+                                        <div class="dropdown-icon-box me-3">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </div>
+                                        <span class="fw-medium">Logout</span>
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </li>
-                    {% else %}
-                    <li class="nav-item ms-lg-2"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-                    <li class="nav-item ms-lg-2"><a class="nav-link btn btn-primary text-white px-4"
-                            href="{% url 'signup' %}">Sign Up</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container my-5" style="min-height: 60vh;">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    {% if user.is_authenticated %}
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <ul class="components">
+                {% if user.role == 'staff' %}
+                <li class="{% if request.resolver_match.url_name == 'staff_dashboard' %}active{% endif %}">
+                    <a href="{% url 'staff_dashboard' %}"><i class="fas fa-user"></i> Profile</a>
+                </li>
+                {% if user.can_register_patients %}
+                <li class="{% if request.resolver_match.url_name == 'patient_list' %}active{% endif %}">
+                    <a href="{% url 'patient_list' %}"><i class="fas fa-user-injured"></i> Patients</a>
+                </li>
+                {% endif %}
+                <li class="{% if request.resolver_match.url_name == 'appointment_list' %}active{% endif %}">
+                    <a href="{% url 'appointment_list' %}"><i class="fas fa-calendar-check"></i> Appointments</a>
+                </li>
+                {% if user.can_manage_billing %}
+                <li class="{% if request.resolver_match.url_name == 'invoice_list' %}active{% endif %}">
+                    <a href="{% url 'invoice_list' %}"><i class="fas fa-file-invoice-dollar"></i> Billing & Invoices</a>
+                </li>
+                {% endif %}
+                {% if user.can_access_clinical_data %}
+                <li class="{% if request.resolver_match.url_name == 'prescription_list' %}active{% endif %}">
+                    <a href="{% url 'prescription_list' %}"><i class="fas fa-file-prescription"></i> Prescriptions</a>
+                </li>
+                {% endif %}
+                {% elif user.role == 'doctor' %}
+                <li class="{% if request.resolver_match.url_name == 'doctor_dashboard' %}active{% endif %}">
+                    <a href="{% url 'doctor_dashboard' %}"><i class="fas fa-user-md"></i> Profile</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'appointment_list' %}active{% endif %}">
+                    <a href="{% url 'appointment_list' %}"><i class="fas fa-calendar-check"></i> Appointments</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'patient_list' %}active{% endif %}">
+                    <a href="{% url 'patient_list' %}"><i class="fas fa-user-injured"></i> Patients</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'prescription_list' %}active{% endif %}">
+                    <a href="{% url 'prescription_list' %}"><i class="fas fa-file-prescription"></i> Prescriptions</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'doctor_leave_list' %}active{% endif %}">
+                    <a href="{% url 'doctor_leave_list' %}"><i class="fas fa-calendar-times"></i> Leaves</a>
+                </li>
+                {% elif user.role == 'patient' %}
+                <li class="{% if request.resolver_match.url_name == 'patient_dashboard' %}active{% endif %}">
+                    <a href="{% url 'patient_dashboard' %}"><i class="fas fa-user"></i> Profile</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'doctor_list' %}active{% endif %}">
+                    <a href="{% url 'doctor_list' %}"><i class="fas fa-user-md"></i> Doctors</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'appointment_list' %}active{% endif %}">
+                    <a href="{% url 'appointment_list' %}"><i class="fas fa-calendar-check"></i> My Appointments</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'prescription_list' %}active{% endif %}">
+                    <a href="{% url 'prescription_list' %}"><i class="fas fa-file-prescription"></i> Prescriptions</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'invoice_list' %}active{% endif %}">
+                    <a href="{% url 'invoice_list' %}"><i class="fas fa-file-invoice-dollar"></i> Billing & Invoices</a>
+                </li>
+                {% else %}
+                <!-- Admin or default -->
+                <li class="{% if request.resolver_match.url_name == 'patient_list' %}active{% endif %}">
+                    <a href="{% url 'patient_list' %}"><i class="fas fa-users"></i> Patients</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'doctor_list' %}active{% endif %}">
+                    <a href="{% url 'doctor_list' %}"><i class="fas fa-user-md"></i> Doctors</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'appointment_list' %}active{% endif %}">
+                    <a href="{% url 'appointment_list' %}"><i class="fas fa-calendar-check"></i> Appointments</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'prescription_list' %}active{% endif %}">
+                    <a href="{% url 'prescription_list' %}"><i class="fas fa-file-prescription"></i> Prescriptions</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'invoice_list' %}active{% endif %}">
+                    <a href="{% url 'invoice_list' %}"><i class="fas fa-file-invoice-dollar"></i> Billing</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="container-fluid">
+                {% else %}
+                <!-- Public Pages Content (No Sidebar) -->
+                <div class="container my-5" style="min-height: 60vh;">
+                    {% endif %}
+
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0 animate-fade-in"
+                            role="alert" style="border-radius: var(--border-radius-sm);">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% block content %}{% endblock %}
+
+                    {% if user.is_authenticated %}
+                </div>
+            </div>
         </div>
-        {% endfor %}
+        {% else %}
+        </div>
         {% endif %}
-        {% block content %}{% endblock %}
-    </div>
-
-    <footer class="mt-auto pt-5 pb-4">
-        <div class="container">
-            <div class="row gy-4">
-                <div class="col-md-4">
-                    <h5 class="d-flex align-items-center"><i class="fas fa-heartbeat me-2 text-primary"></i>MediCare
-                    </h5>
-                    <p class="small mb-4">Your trusted partner in healthcare management. Providing safe,
-                        professional, and advanced medical services for everyone.</p>
-                    <p><a href="{% url 'privacy' %}" class="small"><i class="fas fa-shield-alt me-1"></i> Privacy
-                            Policy</a></p>
+        <!-- Custom Design Footer -->
+        <footer class="mt-auto py-3" style="background-color: #0f172a; border-top: 1px solid #1e293b;">
+            <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+                <div class="mb-2 mb-md-0 d-flex align-items-center">
+                    <i class="fas fa-heartbeat me-2" style="color: #14b8a6; font-size: 1.1rem;"></i>
+                    <span class="text-white fw-bold" style="letter-spacing: 0.5px; font-size: 0.95rem;">MediCare</span>
+                    <span class="ms-3 d-none d-md-inline" style="color: #475569;">|</span>
+                    <span class="ms-3" style="color: #64748b; font-size: 0.8rem;">&copy; 2026 All rights reserved.</span>
                 </div>
-                <div class="col-md-4">
-                    <h5>Contact Us</h5>
-                    <ul class="list-unstyled small space-y-2">
-                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i> 123 Health St, Medical
-                            City</li>
-                        <li class="mb-2"><i class="fas fa-phone me-2 text-primary"></i> +1 234 567 8900</li>
-                        <li class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i> support@medicare.com</li>
-                    </ul>
-                    <div class="mt-3">
-                        <a href="{% url 'contact' %}" class="me-3">Contact</a>
-                        <a href="{% url 'support' %}">Support</a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <h5>Follow Us</h5>
-                    <div class="d-flex gap-3 mt-3 mb-4">
-                        <a href="https://facebook.com" class="fs-5 transition-transform hover-scale"><i
-                                class="fab fa-facebook"></i></a>
-                        <a href="https://linkedin.com" class="fs-5 transition-transform hover-scale"><i
-                                class="fab fa-linkedin"></i></a>
-                        <a href="https://instagram.com" class="fs-5 transition-transform hover-scale"><i
-                                class="fab fa-instagram"></i></a>
-                        <a href="https://whatsapp.com" class="fs-5 transition-transform hover-scale"><i
-                                class="fab fa-whatsapp"></i></a>
-                    </div>
-
-                    <h5>We Accept</h5>
-                    <div class="d-flex gap-3 mt-3 align-items-center">
-                        <i class="fab fa-cc-visa fa-2x text-white opacity-75" title="Visa"></i>
-                        <i class="fab fa-cc-mastercard fa-2x text-white opacity-75" title="MasterCard"></i>
-                        <span class="fw-bold text-white opacity-75" style="font-family: sans-serif;">bKash</span>
-                        <span class="fw-bold text-white opacity-75" style="font-family: sans-serif;">Nagad</span>
-                    </div>
+                <div class="d-flex gap-4 align-items-center">
+                    <a href="{% url 'contact' %}" class="text-decoration-none fw-medium" style="color: #94a3b8; font-size: 0.8rem; transition: color 0.2s;" onmouseover="this.style.color='#14b8a6'" onmouseout="this.style.color='#94a3b8'">Contact</a>
+                    <a href="{% url 'support' %}" class="text-decoration-none fw-medium" style="color: #94a3b8; font-size: 0.8rem; transition: color 0.2s;" onmouseover="this.style.color='#14b8a6'" onmouseout="this.style.color='#94a3b8'">Support</a>
+                    <a href="{% url 'privacy' %}" class="text-decoration-none fw-medium" style="color: #94a3b8; font-size: 0.8rem; transition: color 0.2s;" onmouseover="this.style.color='#14b8a6'" onmouseout="this.style.color='#94a3b8'">Privacy</a>
                 </div>
             </div>
-            <div class="row mt-5 pt-4 border-top border-secondary">
-                <div class="col-12 text-center">
-                    <small>&copy; 2025 MediCare. All rights reserved.</small>
-                </div>
-            </div>
-        </div>
-    </footer>
+        </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% block extra_js %}{% endblock %}
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const sidebarCollapseBtn = document.getElementById('sidebarCollapse');
+                const sidebar = document.querySelector('.sidebar');
+                
+                if (sidebarCollapseBtn && sidebar) {
+                    // Start collapsed on small screens
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.add('collapsed');
+                    }
+                    
+                    sidebarCollapseBtn.addEventListener('click', function() {
+                        sidebar.classList.toggle('collapsed');
+                    });
+                }
+            });
+        </script>
+        {% block extra_js %}{% endblock %}
 </body>
 
 </html>

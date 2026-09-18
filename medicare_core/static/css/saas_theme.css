@@ -1,0 +1,172 @@
+/* 
+ * Premium SaaS Theme Overrides for Django Unfold
+ * Used for Avatars, Pill Badges, and Custom Dashboards
+ */
+
+/* ==========================================================================
+   Avatars
+   ========================================================================== */
+.saas-avatar-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.saas-avatar {
+    flex-shrink: 0;
+    height: 2.25rem;
+    width: 2.25rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.75rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.saas-avatar-text {
+    font-weight: 500;
+}
+
+/* Avatar Colors */
+.avatar-blue { background-color: #3b82f6; }
+.avatar-indigo { background-color: #6366f1; }
+.avatar-emerald { background-color: #10b981; }
+.avatar-violet { background-color: #8b5cf6; }
+.avatar-rose { background-color: #f43f5e; }
+.avatar-cyan { background-color: #06b6d4; }
+.avatar-amber { background-color: #f59e0b; }
+
+/* ==========================================================================
+   Pill Badges (Status, Roles, etc.)
+   ========================================================================== */
+.saas-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    text-transform: capitalize;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Specific Badge Colors */
+.badge-success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.badge-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.badge-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.badge-info {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+.badge-neutral {
+    background-color: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+.badge-purple {
+    background-color: #ede9fe;
+    color: #5b21b6;
+    border: 1px solid #ddd6fe;
+}
+
+.badge-pink {
+    background-color: #fce7f3;
+    color: #9d174d;
+    border: 1px solid #fbcfe8;
+}
+
+/* Dark mode support (Unfold uses .dark class) */
+.dark .badge-success { background-color: rgba(6, 95, 70, 0.4); color: #34d399; border-color: rgba(6, 95, 70, 0.8); }
+.dark .badge-danger { background-color: rgba(153, 27, 27, 0.4); color: #f87171; border-color: rgba(153, 27, 27, 0.8); }
+.dark .badge-warning { background-color: rgba(146, 64, 14, 0.4); color: #fbbf24; border-color: rgba(146, 64, 14, 0.8); }
+.dark .badge-info { background-color: rgba(30, 64, 175, 0.4); color: #60a5fa; border-color: rgba(30, 64, 175, 0.8); }
+.dark .badge-neutral { background-color: rgba(55, 65, 81, 0.4); color: #9ca3af; border-color: rgba(55, 65, 81, 0.8); }
+.dark .badge-purple { background-color: rgba(91, 33, 182, 0.4); color: #a78bfa; border-color: rgba(91, 33, 182, 0.8); }
+.dark .badge-pink { background-color: rgba(157, 23, 77, 0.4); color: #f472b6; border-color: rgba(157, 23, 77, 0.8); }
+
+/* ==========================================================================
+   KPI Summary Cards (List View Headers)
+   ========================================================================== */
+.saas-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .saas-kpi-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.saas-kpi-card {
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f3f4f6;
+    display: flex;
+    flex-direction: column;
+}
+
+.dark .saas-kpi-card {
+    background-color: #1f2937;
+    border-color: #374151;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+
+.saas-kpi-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.dark .saas-kpi-title {
+    color: #9ca3af;
+}
+
+.saas-kpi-value {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.dark .saas-kpi-value {
+    color: #f9fafb;
+}
+
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+.text-left { text-align: left !important; }
+.font-medium { font-weight: 500 !important; }
+.font-bold { font-weight: 700 !important; }
+.font-mono { font-family: monospace !important; }
+.text-gray-500 { color: #6b7280 !important; }
+.dark .text-gray-400 { color: #9ca3af !important; }
