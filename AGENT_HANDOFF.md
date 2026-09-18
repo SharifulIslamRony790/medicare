@@ -6,7 +6,7 @@
 ## 1. Technical Context & Stack
 
 - **Framework:** Django 5.2.x, Python 3.10+
-- **Database:** SQLite (local development) / PostgreSQL (production target via Neon)
+- **Database:** PostgreSQL
 - **Frontend:** HTML5, CSS3, Vanilla JavaScript, Bootstrap 5.
 - **Admin Panel:** `django-unfold` (highly customized SaaS-like admin interface).
 - **Authentication:** `django-allauth` (includes Google OAuth integration).

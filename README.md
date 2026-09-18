@@ -10,6 +10,10 @@
 
 <br />
 
+> **🌍 Live Demo:** [https://your-app-name.onrender.com](https://your-app-name.onrender.com) *(Replace this with your actual Render URL once live)*
+
+<br />
+
 ## 📖 Overview
 
 MediCare is an all-in-one solution designed to streamline the operations of hospitals and clinics. It provides dedicated interfaces for managing patients, doctors, appointments, medical billing, and clinical prescriptions, ensuring a seamless experience for both staff and patients.
@@ -27,7 +31,7 @@ MediCare is an all-in-one solution designed to streamline the operations of hosp
 ## 🏗️ Tech Stack
 
 - **Backend:** Python 3, Django 5.x
-- **Database:** SQLite (Development) / PostgreSQL (Production)
+- **Database:** PostgreSQL
 - **Document Generation:** ReportLab (PDFs), XlsxWriter (Excel)
 - **Frontend:** HTML5, CSS3, JavaScript (Vanilla), Bootstrap 5
 
@@ -105,6 +109,13 @@ This project is configured for easy deployment on platforms like Render:
 The codebase follows a strict clean-code architecture. 
 - **Sectional Comments:** All major views and models contain structured English comments (e.g., `=== FEATURE: ... ===`) explaining the purpose of the code.
 - **Modifying Permissions:** Role logic is centralized in `users/models.py` within the `User` class. Update helper methods like `can_manage_billing()` to change access rules globally.
+
+---
+
+## 👤 Author
+
+**Shariful Islam Rony**
+- GitHub: [@SharifulIslamRony790](https://github.com/SharifulIslamRony790)
 
 ---
 *Built with ❤️ for better healthcare management.*
