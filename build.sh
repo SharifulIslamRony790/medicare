@@ -10,3 +10,5 @@ python manage.py collectstatic --no-input
 
 echo "Running migrations..."
 python manage.py migrate
+
+python setup_render_data.py
