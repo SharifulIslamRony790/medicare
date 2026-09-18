@@ -11,24 +11,32 @@ from django.contrib.sites.models import Site
 
 User = get_user_model()
 
-# 1. Create Superuser (Admin)
-admin_username = os.getenv('ADMIN_USERNAME', 'admin')
-admin_email = os.getenv('ADMIN_EMAIL', 'admin@example.com')
-admin_password = os.getenv('ADMIN_PASSWORD', 'admin1234')
+# 1. Create or Update Superuser (Admin)
+admin_username = os.getenv('ADMIN_USERNAME', 'ronyadmin')
+admin_email = os.getenv('ADMIN_EMAIL', 'ronyislam8121@gmail.com')
+admin_password = os.getenv('ADMIN_PASSWORD', 'ronyadmin1234')
 
-if not User.objects.filter(username=admin_username).exists():
-    try:
-        User.objects.create_superuser(
-            username=admin_username,
-            email=admin_email,
-            password=admin_password,
-            role='admin'
-        )
-        print("Superuser created successfully.")
-    except Exception as e:
-        print(f"Failed to create superuser: {e}")
-else:
-    print("Superuser already exists.")
+try:
+    user, created = User.objects.get_or_create(
+        username=admin_username,
+        defaults={
+            'email': admin_email,
+            'role': 'admin',
+            'is_superuser': True,
+            'is_staff': True
+        }
+    )
+    user.set_password(admin_password)
+    user.is_superuser = True
+    user.is_staff = True
+    user.role = 'admin'
+    user.save()
+    if created:
+        print(f"Superuser '{admin_username}' created successfully.")
+    else:
+        print(f"Superuser '{admin_username}' updated with new password.")
+except Exception as e:
+    print(f"Failed to setup superuser: {e}")
 
 # 2. Setup Site for Render
 site, created = Site.objects.get_or_create(id=1)
@@ -38,25 +46,22 @@ site.save()
 print("Site domain updated successfully.")
 
 # 3. Create Google SocialApp
-client_id = os.getenv('GOOGLE_CLIENT_ID')
-secret = os.getenv('GOOGLE_CLIENT_SECRET')
+client_id = os.getenv('GOOGLE_CLIENT_ID', 'dummy_client_id_please_change')
+secret = os.getenv('GOOGLE_CLIENT_SECRET', 'dummy_secret_please_change')
 
-if client_id and secret:
-    app, created = SocialApp.objects.get_or_create(
-        provider='google',
-        defaults={
-            'name': 'Google',
-            'client_id': client_id,
-            'secret': secret,
-        }
-    )
-    if not created:
-        app.client_id = client_id
-        app.secret = secret
-        app.save()
+app, created = SocialApp.objects.get_or_create(
+    provider='google',
+    defaults={
+        'name': 'Google',
+        'client_id': client_id,
+        'secret': secret,
+    }
+)
+if not created:
+    app.client_id = client_id
+    app.secret = secret
+    app.save()
 
-    # Add the site to the app
-    app.sites.add(site)
-    print("Google SocialApp configured successfully.")
-else:
-    print("Google Client ID or Secret is missing in environment variables. SocialApp skipped.")
+# Add the site to the app
+app.sites.add(site)
+print("Google SocialApp configured successfully (using dummy credentials if missing in env).")

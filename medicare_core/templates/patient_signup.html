@@ -7,23 +7,28 @@
         max-width: 450px;
         margin: 0 auto;
     }
+
     .form-floating label {
         padding-left: 1.25rem;
     }
+
     .btn-gradient {
         background: linear-gradient(135deg, #28a745, #20c997);
         border: none;
         color: white;
     }
+
     .btn-gradient:hover {
         background: linear-gradient(135deg, #218838, #1ba87e);
         color: white;
         transform: translateY(-1px);
         box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
     }
+
     .transition-all {
         transition: all 0.2s ease-in-out;
     }
+
     .password-match-icon {
         position: absolute;
         right: 15px;
@@ -50,7 +55,8 @@
                 {% endfor %}
                 {% endif %}
 
-                <a href="{% provider_login_url 'google' %}" class="btn btn-outline-dark w-100 mb-4 rounded-pill fw-medium py-2 d-flex align-items-center justify-content-center transition-all hover-shadow">
+                <a href="{% provider_login_url 'google' %}"
+                    class="btn btn-outline-dark w-100 mb-4 rounded-pill fw-medium py-2 d-flex align-items-center justify-content-center transition-all hover-shadow">
                     <i class="fab fa-google text-danger me-2 fs-5"></i>
                     Continue with Google
                 </a>
@@ -63,12 +69,12 @@
 
                 <form method="post" id="signupForm">
                     {% csrf_token %}
-                    
+
                     <div class="mb-3">
                         <label class="form-label fw-medium text-secondary small">Full Name</label>
                         {{ form.name }}
                         {% for error in form.name.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                        <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
 
@@ -76,7 +82,7 @@
                         <label class="form-label fw-medium text-secondary small">Username</label>
                         {{ form.username }}
                         {% for error in form.username.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                        <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
 
@@ -84,7 +90,7 @@
                         <label class="form-label fw-medium text-secondary small">Email Address</label>
                         {{ form.email }}
                         {% for error in form.email.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                        <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
 
@@ -92,7 +98,7 @@
                         <label class="form-label fw-medium text-secondary small">Password</label>
                         {{ form.password1 }}
                         {% for error in form.password1.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                        <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
 
@@ -101,16 +107,19 @@
                         {{ form.password2 }}
                         <i class="fas fa-check-circle text-success password-match-icon" id="matchIcon"></i>
                         {% for error in form.password2.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
+                        <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
                     </div>
 
-                    <button type="submit" class="btn btn-gradient w-100 py-2 rounded-pill fw-bold fs-5 transition-all">Create Account</button>
+                    <button type="submit"
+                        class="btn btn-gradient w-100 py-2 rounded-pill fw-bold fs-5 transition-all">Create
+                        Account</button>
                 </form>
             </div>
-            
+
             <div class="card-footer bg-transparent border-0 text-center pb-4">
-                <p class="mb-0 text-muted">Already have an account? <a href="{% url 'login' %}" class="text-success fw-bold text-decoration-none">Log In</a></p>
+                <p class="mb-0 text-muted">Already have an account? <a href="{% url 'login' %}"
+                        class="text-success fw-bold text-decoration-none">Log In</a></p>
             </div>
         </div>
 
@@ -124,7 +133,7 @@
 
 <script>
     // Simple inline validation for password matching
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         const pass1 = document.querySelector("input[name='password1']");
         const pass2 = document.querySelector("input[name='password2']");
         const matchIcon = document.getElementById("matchIcon");
