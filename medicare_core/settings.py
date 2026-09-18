@@ -170,7 +170,7 @@ REST_FRAMEWORK = {
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'medicare_core/static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = 'login'
