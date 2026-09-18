@@ -180,7 +180,8 @@ REST_FRAMEWORK = {
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'medicare_core/static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_MANIFEST_STRICT = False
 
 AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = 'login'
@@ -240,7 +241,7 @@ UNFOLD = {
     "SITE_URL": "/",
     "SITE_SYMBOL": "medical_services",
     "STYLES": [
-        lambda request: __import__('django.templatetags.static').templatetags.static.static("css/saas_theme.css"),
+        lambda request: __import__('django.templatetags.static').templatetags.static.static("css/saas_theme.css") + "?v=2",
     ],
     "DASHBOARD_CALLBACK": "dashboard.views.dashboard_callback",
     "SIDEBAR": {
