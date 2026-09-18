@@ -31,7 +31,7 @@ MediCare is an all-in-one solution designed to streamline the operations of hosp
 ## 🏗️ Tech Stack
 
 - **Backend:** Python 3, Django 5.x
-- **Database:** PostgreSQL
+- **Database:** PostgreSQL 17
 - **Document Generation:** ReportLab (PDFs), XlsxWriter (Excel)
 - **Frontend:** HTML5, CSS3, JavaScript (Vanilla), Bootstrap 5
 
@@ -114,8 +114,9 @@ The codebase follows a strict clean-code architecture.
 
 ## 👤 Author
 
-**Shariful Islam Rony**
+**Md Shariful Islam Rony**
 - GitHub: [@SharifulIslamRony790](https://github.com/SharifulIslamRony790)
+- LinkedIn: [@SharifulIslamRony](https://www.linkedin.com/in/md-shariful-islam-rony/)
 
 ---
 *Built with ❤️ for better healthcare management.*
