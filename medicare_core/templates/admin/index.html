@@ -4,9 +4,22 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block content %}
-<script src="https://cdn.tailwindcss.com"></script>
 <style>
-    /* Force dark mode colors since Tailwind compiled CSS might miss these specific background classes */
+    /* Default (Light Mode) colors for classes that might be purged from Tailwind */
+    .custom-text-primary {
+        color: #111827 !important; /* gray-900 */
+    }
+    .custom-icon-bg {
+        background-color: #6366f1 !important; /* indigo-500 */
+    }
+    .custom-icon-text {
+        color: #ffffff !important; /* white */
+    }
+    .custom-line {
+        background-color: #e5e7eb !important; /* gray-200 */
+    }
+
+    /* Force dark mode colors */
     html.dark .custom-card {
         background-color: #111827 !important; /* gray-900 */
         border-color: #374151 !important; /* gray-700 */
@@ -19,6 +32,12 @@
     }
     html.dark .custom-border {
         border-color: #374151 !important;
+    }
+    html.dark .custom-ring {
+        --tw-ring-color: #111827 !important;
+    }
+    html.dark .custom-line {
+        background-color: #374151 !important; /* gray-700 */
     }
 </style>
 
@@ -132,12 +151,12 @@
                     <li>
                         <div class="relative pb-8">
                             {% if not forloop.last %}
-                            <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 custom-border" aria-hidden="true"></span>
+                            <span class="absolute top-4 left-4 -ml-px h-full w-0.5 custom-line" aria-hidden="true"></span>
                             {% endif %}
                             <div class="relative flex space-x-3">
                                 <div>
-                                    <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white bg-indigo-500" style="--tw-ring-color: #111827;">
-                                        <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white custom-ring custom-icon-bg">
+                                        <svg class="h-5 w-5 custom-icon-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                     </span>
                                 </div>
                                 <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
