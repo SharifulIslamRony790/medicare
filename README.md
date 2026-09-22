@@ -10,7 +10,7 @@
 
 <br />
 
-> **🌍 Live Demo:** [https://your-app-name.onrender.com](https://your-app-name.onrender.com) *(Replace this with your actual Render URL once live)*
+> **🌍 Live Demo:** [https://medicare-5eop.onrender.com](https://medicare-5eop.onrender.com)
 
 <br />
 
@@ -24,7 +24,7 @@ MediCare is an all-in-one solution designed to streamline the operations of hosp
 - **📅 Smart Appointment Scheduling:** Dynamic time-slot generation (10-minute intervals) that automatically accounts for doctor schedules and leaves. Built-in logic prevents double-booking.
 - **💊 Clinical Prescriptions:** Doctors can write detailed prescriptions including symptoms, diagnoses, medications (with dosages), and advice. Generates highly styled PDF prescriptions on the fly.
 - **💳 Billing & Payments:** Automated invoice generation, partial/full payment tracking, and PDF payment receipts.
-- **📧 Asynchronous Notifications:** Uses background threading to send email notifications for bookings and payments without freezing the user interface.
+- **📧 Asynchronous HTML Notifications:** Uses background threading to send beautiful HTML email notifications for signups, bookings, and payments, including automatically generated PDF invoice attachments without freezing the user interface.
 - **🔒 Secure Infrastructure:** Built-in protection against IDOR (Insecure Direct Object References) and XSS. Production-ready security headers enforced.
 - **📊 Admin Dashboard:** Excel report generation and KPI tracking using Unfold Admin.
 

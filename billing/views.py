@@ -143,7 +143,7 @@ def payment_process(request, invoice_id, method):
     if request.method == 'POST':
         # Simulate payment processing
         transaction_id = str(uuid.uuid4())
-        Payment.objects.create(
+        payment_obj = Payment.objects.create(
             invoice=invoice,
             method=method.upper(),
             transaction_id=transaction_id,
@@ -153,39 +153,62 @@ def payment_process(request, invoice_id, method):
         invoice.save()
 
         # Send Email Notification TO User asynchronously
-        # Get user from patient profile
         patient_user = invoice.patient.user
         if patient_user and patient_user.email:
-            subject = 'Payment Confirmed - MediCare'
-            message = f"""
-            Dear {patient_user.username},
-
-            Your payment has been successfully processed.
-
-            Invoice ID: #{invoice.id}
-            Amount: ${invoice.total_amount}
-            Transaction ID: {transaction_id}
-            Payment Method: {method.upper()}
-
-            Thank you for choosing MediCare.
-            """
-            import threading
+            subject = 'Payment Receipt - MediCare'
             
-            def send_async_email(subject, message, recipient_list):
+            html_message = f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 0;">
+                    <div style="max-width: 600px; margin: 20px auto; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+                        <div style="background-color: #3b82f6; color: #ffffff; padding: 20px; text-align: center;">
+                            <h1 style="margin: 0; font-size: 24px;">Payment Received!</h1>
+                        </div>
+                        <div style="padding: 30px; background-color: #ffffff;">
+                            <p style="font-size: 16px; color: #1f2937;">Dear <strong>{patient_user.username}</strong>,</p>
+                            <p style="font-size: 16px; color: #4b5563;">Thank you for your payment. Your transaction was successful.</p>
+                            
+                            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                                <p style="margin: 5px 0;"><strong>Invoice ID:</strong> #{invoice.id}</p>
+                                <p style="margin: 5px 0;"><strong>Amount Paid:</strong> ${invoice.total_amount}</p>
+                                <p style="margin: 5px 0;"><strong>Transaction ID:</strong> {transaction_id}</p>
+                                <p style="margin: 5px 0;"><strong>Method:</strong> {method.upper()}</p>
+                            </div>
+                            
+                            <p style="font-size: 16px; color: #4b5563;">We have attached a PDF copy of your receipt to this email for your records.</p>
+                            <br>
+                            <p style="font-size: 16px; color: #4b5563; margin-bottom: 5px;">Stay Healthy,</p>
+                            <p style="font-size: 16px; color: #1f2937; margin-top: 0;"><strong>The MediCare Team</strong></p>
+                        </div>
+                    </div>
+                </body>
+            </html>
+            """
+            
+            plain_message = f"Dear {patient_user.username},\n\nThank you for your payment. Your transaction was successful.\n\nInvoice ID: #{invoice.id}\nAmount Paid: ${invoice.total_amount}\nTransaction ID: {transaction_id}\nMethod: {method.upper()}\n\nWe have attached a PDF copy of your receipt to this email for your records.\n\nStay Healthy,\nThe MediCare Team"
+            
+            pdf_bytes = generate_receipt_pdf_bytes(payment_obj)
+            
+            import threading
+            from django.core.mail import EmailMultiAlternatives
+            
+            def send_async_receipt(subject, txt_msg, html_msg, recipient_list, pdf_data, p_id):
                 try:
-                    send_mail(
-                        subject,
-                        message,
-                        settings.EMAIL_HOST_USER,
-                        recipient_list,
-                        fail_silently=True,
+                    email = EmailMultiAlternatives(
+                        subject=subject,
+                        body=txt_msg,
+                        from_email=settings.EMAIL_HOST_USER,
+                        to=recipient_list,
                     )
+                    email.attach_alternative(html_msg, "text/html")
+                    email.attach(f'receipt_{p_id}.pdf', pdf_data, 'application/pdf')
+                    email.send(fail_silently=True)
                 except Exception as e:
                     print(f"Error sending email: {e}")
                     
             email_thread = threading.Thread(
-                target=send_async_email,
-                args=(subject, message, [patient_user.email])
+                target=send_async_receipt,
+                args=(subject, plain_message, html_message, [patient_user.email], pdf_bytes, payment_obj.id)
             )
             email_thread.start()
 
@@ -217,9 +240,7 @@ def payment_success(request, invoice_id):
 # PURPOSE: Dynamically generates a PDF receipt for a successful payment using 
 #          ReportLab and returns it as an inline HTTP response.
 # ==============================================================================
-@login_required
-def payment_receipt_pdf(request, payment_id):
-    payment = get_object_or_404(Payment, pk=payment_id)
+def generate_receipt_pdf_bytes(payment):
     invoice = payment.invoice
     
     # Create PDF buffer
@@ -320,10 +341,16 @@ def payment_receipt_pdf(request, payment_id):
     doc.build(elements)
     pdf = buffer.getvalue()
     buffer.close()
+    return pdf
+
+@login_required
+def payment_receipt_pdf(request, payment_id):
+    payment = get_object_or_404(Payment, pk=payment_id)
+    pdf_bytes = generate_receipt_pdf_bytes(payment)
     
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="receipt_{payment_id}.pdf"'
-    response.write(pdf)
+    response.write(pdf_bytes)
     
     return response
 

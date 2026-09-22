@@ -184,34 +184,54 @@ def appointment_add(request):
                 # Send Email Notification TO User asynchronously
                 if appointment.status == 'confirmed' and appointment.patient.email:
                     subject = 'Appointment Confirmed - MediCare'
-                    message = f"""
-                    Dear {appointment.patient.name},
-
-                    Your appointment has been confirmed.
-
-                    Doctor: {appointment.doctor.name}
-                    Date: {appointment.date}
-                    Time: {appointment.time}
-
-                    Thank you for choosing MediCare.
+                    
+                    html_message = f"""
+                    <html>
+                        <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 0;">
+                            <div style="max-width: 600px; margin: 20px auto; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+                                <div style="background-color: #10b981; color: #ffffff; padding: 20px; text-align: center;">
+                                    <h1 style="margin: 0; font-size: 24px;">Appointment Confirmed!</h1>
+                                </div>
+                                <div style="padding: 30px; background-color: #ffffff;">
+                                    <p style="font-size: 16px; color: #1f2937;">Dear <strong>{appointment.patient.name}</strong>,</p>
+                                    <p style="font-size: 16px; color: #4b5563;">Your appointment has been successfully confirmed. Here are the details:</p>
+                                    
+                                    <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                                        <p style="margin: 5px 0;"><strong>Doctor:</strong> {appointment.doctor.name}</p>
+                                        <p style="margin: 5px 0;"><strong>Date:</strong> {appointment.date}</p>
+                                        <p style="margin: 5px 0;"><strong>Time:</strong> {appointment.time}</p>
+                                    </div>
+                                    
+                                    <p style="font-size: 16px; color: #4b5563;">Please arrive 10 minutes early. If you need to cancel, please do so from your dashboard.</p>
+                                    <br>
+                                    <p style="font-size: 16px; color: #4b5563; margin-bottom: 5px;">Thank you for choosing MediCare,</p>
+                                    <p style="font-size: 16px; color: #1f2937; margin-top: 0;"><strong>The MediCare Team</strong></p>
+                                </div>
+                            </div>
+                        </body>
+                    </html>
                     """
+                    
+                    plain_message = f"Dear {appointment.patient.name},\n\nYour appointment has been successfully confirmed.\n\nDoctor: {appointment.doctor.name}\nDate: {appointment.date}\nTime: {appointment.time}\n\nPlease arrive 10 minutes early. If you need to cancel, please do so from your dashboard.\n\nThank you for choosing MediCare,\nThe MediCare Team"
+                    
                     import threading
                     
-                    def send_async_email(subject, message, recipient_list):
+                    def send_async_email(subject, txt_msg, html_msg, recipient_list):
                         try:
                             send_mail(
                                 subject,
-                                message,
+                                txt_msg,
                                 settings.EMAIL_HOST_USER,
                                 recipient_list,
                                 fail_silently=True,
+                                html_message=html_msg
                             )
                         except Exception as e:
                             print(f"Error sending email: {e}")
                             
                     email_thread = threading.Thread(
                         target=send_async_email,
-                        args=(subject, message, [appointment.patient.email])
+                        args=(subject, plain_message, html_message, [appointment.patient.email])
                     )
                     email_thread.start()
 
