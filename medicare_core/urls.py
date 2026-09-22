@@ -17,7 +17,7 @@ from appointments.views import appointment_list, appointment_add, appointment_co
 from prescriptions.views import prescription_list, prescription_add, prescription_pdf, prescription_print_view
 from billing.views import invoice_list, invoice_add, invoice_detail, invoice_approve, payment_select, payment_process, payment_success, payment_receipt_pdf
 from users.views import login_view, signup_view, logout_view, settings_view, doctor_signup_view, patient_signup_view, complete_profile_view, complete_doctor_profile_view
-from dashboard.views import download_monthly_revenue_excel
+from dashboard.views import download_monthly_revenue_excel, contact_message_list, resolve_contact_message
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -31,6 +31,8 @@ urlpatterns = [
     path('dashboard/monthly-revenue/export/', download_monthly_revenue_excel, name='export_monthly_revenue'),
     path('dashboard/', admin.site.urls),
     path('staff/', include('staff.urls')),
+    path('staff/messages/', contact_message_list, name='contact_message_list'),
+    path('staff/messages/<int:msg_id>/resolve/', resolve_contact_message, name='resolve_contact_message'),
     path('accounts/', include('allauth.urls')),
     path('api/', include(router.urls)),
     path('', home, name='home'),

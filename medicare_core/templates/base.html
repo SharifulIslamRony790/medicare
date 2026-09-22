@@ -132,6 +132,11 @@
                     <a href="{% url 'invoice_list' %}"><i class="fas fa-file-invoice-dollar"></i> Billing & Invoices</a>
                 </li>
                 {% endif %}
+                {% if user.can_handle_support %}
+                <li class="{% if request.resolver_match.url_name == 'contact_message_list' %}active{% endif %}">
+                    <a href="{% url 'contact_message_list' %}"><i class="fas fa-envelope-open-text"></i> Contact Messages</a>
+                </li>
+                {% endif %}
                 {% if user.can_access_clinical_data %}
                 <li class="{% if request.resolver_match.url_name == 'prescription_list' %}active{% endif %}">
                     <a href="{% url 'prescription_list' %}"><i class="fas fa-file-prescription"></i> Prescriptions</a>

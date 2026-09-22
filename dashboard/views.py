@@ -251,3 +251,30 @@ def download_monthly_revenue_excel(request):
     response['Content-Disposition'] = f'attachment; filename={filename}'
     
     return response
+
+# ==============================================================================
+# FEATURE: CONTACT MESSAGES FRONTEND
+# PURPOSE: Allows support agents and managers to view and resolve contact messages
+#          from the frontend dashboard.
+# ==============================================================================
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import ContactMessage
+
+@login_required
+def contact_message_list(request):
+    if not request.user.can_handle_support():
+        return render(request, 'error_403.html', {'message': "You don't have permission to view contact messages."})
+    
+    contact_messages = ContactMessage.objects.all().order_by('-created_at')
+    return render(request, 'contact_message_list.html', {'contact_messages': contact_messages})
+
+@login_required
+def resolve_contact_message(request, msg_id):
+    if not request.user.can_handle_support():
+        return render(request, 'error_403.html', {'message': "You don't have permission to resolve contact messages."})
+    
+    message = get_object_or_404(ContactMessage, id=msg_id)
+    message.is_resolved = True
+    message.save()
+    return redirect('contact_message_list')

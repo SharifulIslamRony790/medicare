@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4 animate-fade-in">
+    <h2 class="mb-0 text-primary fw-bold"><i class="fas fa-envelope-open-text text-secondary"></i> Contact Messages</h2>
+</div>
+
+<div class="card border-0 shadow-sm animate-fade-in">
+    <div class="card-body p-0">
+        <!-- Desktop View (Table) -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light text-muted">
+                <tr>
+                    <th class="ps-4">Date</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Message Snippet</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for msg in contact_messages %}
+                <tr>
+                    <td class="ps-4">{{ msg.created_at|date:"M d, Y" }}</td>
+                    <td class="fw-bold">{{ msg.name }}</td>
+                    <td><a href="mailto:{{ msg.email }}" class="text-decoration-none">{{ msg.email }}</a></td>
+                    <td class="text-muted text-truncate" style="max-width: 250px;" title="{{ msg.message }}">{{ msg.message }}</td>
+                    <td>
+                        {% if not msg.is_resolved %}
+                            <span class="badge bg-warning text-dark rounded-pill"><i class="fas fa-clock"></i> Pending</span>
+                        {% else %}
+                            <span class="badge bg-success rounded-pill"><i class="fas fa-check-double"></i> Resolved</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary mb-1" data-bs-toggle="modal" data-bs-target="#viewModal{{ msg.id }}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        {% if not msg.is_resolved %}
+                            <button type="button" class="btn btn-sm btn-success mb-1" data-bs-toggle="modal" data-bs-target="#resolveModal{{ msg.id }}">
+                                <i class="fas fa-check"></i> Resolve
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No messages found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile View (Cards) -->
+        <div class="d-block d-md-none p-3 bg-light rounded-bottom-4">
+            {% for msg in contact_messages %}
+            <div class="card mb-3 shadow-sm border-0">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold mb-0 text-primary">{{ msg.name }}</h6>
+                        {% if not msg.is_resolved %}
+                            <span class="badge bg-warning text-dark rounded-pill"><i class="fas fa-clock"></i> Pending</span>
+                        {% else %}
+                            <span class="badge bg-success rounded-pill"><i class="fas fa-check-double"></i> Resolved</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="text-muted small mb-1"><i class="fas fa-envelope me-2"></i>{{ msg.email }}</p>
+                        <p class="text-muted small mb-0"><i class="fas fa-calendar-alt me-2"></i>{{ msg.created_at|date:"M d, Y" }}</p>
+                    </div>
+                    
+                    <div class="mb-3 p-2 bg-light rounded border border-light text-muted small">
+                        "{{ msg.message|truncatechars:60 }}"
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary flex-fill fw-bold" data-bs-toggle="modal" data-bs-target="#viewModal{{ msg.id }}">
+                            <i class="fas fa-eye me-1"></i> View
+                        </button>
+                        {% if not msg.is_resolved %}
+                            <button type="button" class="btn btn-sm btn-success flex-fill fw-bold" data-bs-toggle="modal" data-bs-target="#resolveModal{{ msg.id }}">
+                                <i class="fas fa-check me-1"></i> Resolve
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4 text-muted bg-white rounded-3 shadow-sm border">No messages found.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Render Modals Outside the Table -->
+{% for msg in contact_messages %}
+    <!-- View Modal -->
+    <div class="modal fade" id="viewModal{{ msg.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 text-wrap" style="white-space: normal;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fas fa-envelope-open-text me-2"></i> Message from {{ msg.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 px-md-5 pt-3 pb-4">
+                    <div class="mb-3">
+                        <small class="text-muted d-block fw-bold">Date & Time</small>
+                        <span class="text-dark">{{ msg.created_at|date:"F d, Y h:i A" }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block fw-bold">Email Address</small>
+                        <a href="mailto:{{ msg.email }}" class="text-decoration-none">{{ msg.email }}</a>
+                    </div>
+                    <div class="mb-4">
+                        <small class="text-muted d-block fw-bold mb-1">Message Content</small>
+                        <div class="p-3 bg-light rounded text-dark border border-light">
+                            {{ msg.message|linebreaks }}
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resolve Modal -->
+    {% if not msg.is_resolved %}
+        <div class="modal fade" id="resolveModal{{ msg.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg rounded-4 text-wrap" style="white-space: normal;">
+                    <div class="modal-header border-0 pb-0">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center px-4 px-md-5 pt-0 pb-4">
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mx-auto" style="width: 80px; height: 80px;">
+                                <i class="fas fa-check-circle fa-2xl"></i>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold mb-3">Mark as Resolved?</h4>
+                        <p class="text-muted mb-4">Are you sure you want to mark the message from <strong>{{ msg.name }}</strong> as resolved? This action indicates that the user's issue has been addressed.</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                            <form action="{% url 'resolve_contact_message' msg.id %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success rounded-pill px-4"><i class="fas fa-check me-2"></i>Yes, Resolve it</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+
+{% endblock %}

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from patients.models import Patient
 from doctors.models import Doctor
 from appointments.models import Appointment
@@ -64,9 +65,8 @@ def get_client_ip(request):
 
 def contact(request):
     if request.method == 'POST':
-        # 1. Rate Limiting Check
-        ip = get_client_ip(request)
-        cache_key = f'contact_rate_{ip}'
+        client_ip = request.META.get('REMOTE_ADDR')
+        cache_key = f'contact_form_limit_{client_ip}'
         request_count = cache.get(cache_key, 0)
         
         if request_count >= 5:
@@ -85,7 +85,7 @@ def contact(request):
             
         url = 'https://www.google.com/recaptcha/api/siteverify'
         values = {
-            'secret': '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
+            'secret': settings.RECAPTCHA_SECRET_KEY,
             'response': recaptcha_response
         }
         data = urllib.parse.urlencode(values).encode()
@@ -108,7 +108,9 @@ def contact(request):
         else:
             messages.error(request, "Please fill out all the fields.")
             
-    return render(request, 'contact.html')
+    return render(request, 'contact.html', {
+        'recaptcha_site_key': settings.RECAPTCHA_SITE_KEY
+    })
 
 def support(request):
     return render(request, 'support.html')

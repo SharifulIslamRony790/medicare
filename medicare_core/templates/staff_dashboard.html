@@ -82,5 +82,20 @@
     </div>
     {% endif %}
 
+    {% if not staff_profile or staff_profile.sub_role == 'support_agent' or staff_profile.sub_role == 'manager' or staff_profile.sub_role == 'receptionist' %}
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 hover-scale transition-transform">
+            <div class="card-body text-center p-4">
+                <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                    <i class="fas fa-envelope fa-2x text-secondary"></i>
+                </div>
+                <h5 class="fw-bold">Contact Messages</h5>
+                <p class="text-muted small">View and manage messages from the website contact form.</p>
+                <a href="{% url 'contact_message_list' %}" class="btn btn-outline-secondary btn-sm w-100 mt-2">Manage</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}
