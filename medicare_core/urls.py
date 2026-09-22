@@ -13,7 +13,7 @@ from billing.views import InvoiceViewSet
 from medicare_core.views import home, contact, support, privacy, user_guide, faqs, live_chat
 from patients.views import patient_list, patient_add, patient_detail, patient_dashboard_view
 from doctors.views import doctor_list, doctor_add, doctor_leave_list, doctor_leave_add, doctor_leave_delete, doctor_dashboard_view, doctor_detail
-from appointments.views import appointment_list, appointment_add, appointment_complete, appointment_cancel, get_available_slots
+from appointments.views import appointment_list, appointment_add, appointment_complete, appointment_cancel, appointment_confirm, get_available_slots
 from prescriptions.views import prescription_list, prescription_add, prescription_pdf, prescription_print_view
 from billing.views import invoice_list, invoice_add, invoice_detail, invoice_approve, payment_select, payment_process, payment_success, payment_receipt_pdf
 from users.views import login_view, signup_view, logout_view, settings_view, doctor_signup_view, patient_signup_view, complete_profile_view, complete_doctor_profile_view
@@ -50,6 +50,7 @@ urlpatterns = [
     path('appointments/', appointment_list, name='appointment_list'),
     path('appointments/add/', appointment_add, name='appointment_add'),
     path('appointments/<int:pk>/complete/', appointment_complete, name='appointment_complete'),
+    path('appointments/<int:pk>/confirm/', appointment_confirm, name='appointment_confirm'),
     path('appointments/<int:pk>/cancel/', appointment_cancel, name='appointment_cancel'),
     path('api/available-slots/', get_available_slots, name='get_available_slots'),
     path('prescriptions/', prescription_list, name='prescription_list'),

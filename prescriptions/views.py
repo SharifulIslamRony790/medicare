@@ -75,24 +75,13 @@ def prescription_add(request):
 # PURPOSE: Dynamically generates a highly styled PDF document of the prescription 
 #          using ReportLab, complete with hospital header and medication table.
 # ==============================================================================
-@login_required
-def prescription_pdf(request, pk):
+def generate_prescription_pdf_bytes(prescription):
     from reportlab.lib.pagesizes import letter
     from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import inch
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from io import BytesIO
-    
-    prescription = get_object_or_404(Prescription, pk=pk)
-    
-    # RBAC Security Check
-    if request.user.role == 'patient':
-        if prescription.appointment.patient != request.user.patient_profile:
-            return render(request, 'error_403.html', {'message': 'You can only view your own prescriptions.'}, status=403)
-    elif request.user.role == 'doctor':
-        if prescription.appointment.doctor != request.user.doctor_profile:
-            return render(request, 'error_403.html', {'message': 'You can only view prescriptions you have issued.'}, status=403)
     
     doctor = prescription.appointment.doctor
     patient = prescription.appointment.patient
@@ -201,19 +190,64 @@ def prescription_pdf(request, pk):
         
     # Footer / Signature
     elements.append(Spacer(1, 50))
-    sig_data = [['', '_________________________'], ['', f'Dr. {doctor.name}']]
+    
+    sig_data = [
+        ['', f"{doctor.name}"],
+        ['', 'AUTHORIZED SIGNATURE'],
+        ['', f"{prescription.created_at.strftime('%b %d, %Y')}"]
+    ]
+    
     sig_table = Table(sig_data, colWidths=[4.8*inch, 2.5*inch])
     sig_table.setStyle(TableStyle([
+        # Doctor Name styling (acting as signature)
         ('ALIGN', (1, 0), (1, -1), 'CENTER'),
+        ('FONTNAME', (1, 0), (1, 0), 'Times-BoldItalic'),
+        ('FONTSIZE', (1, 0), (1, 0), 22),
+        ('TEXTCOLOR', (1, 0), (1, 0), colors.HexColor('#1d4ed8')),
+        ('BOTTOMPADDING', (1, 0), (1, 0), 2),
+        
+        # Line between Name and Authorized Signature
+        ('LINEABOVE', (1, 1), (1, 1), 1, colors.black),
+        
+        # Authorized Signature styling
         ('FONTNAME', (1, 1), (1, 1), 'Helvetica-Bold'),
+        ('FONTSIZE', (1, 1), (1, 1), 8),
+        ('TOPPADDING', (1, 1), (1, 1), 5),
+        ('BOTTOMPADDING', (1, 1), (1, 1), 0),
+        
+        # Date styling
+        ('FONTNAME', (1, 2), (1, 2), 'Helvetica'),
+        ('FONTSIZE', (1, 2), (1, 2), 7),
+        ('TEXTCOLOR', (1, 2), (1, 2), colors.grey),
     ]))
+    
     elements.append(sig_table)
     
     # Build PDF
     doc.build(elements)
-    buffer.seek(0)
+    pdf = buffer.getvalue()
+    buffer.close()
+    return pdf
+
+@login_required
+def prescription_pdf(request, pk):
+    prescription = get_object_or_404(Prescription, pk=pk)
     
+    # RBAC Security Check
+    if request.user.role == 'patient':
+        if prescription.appointment.patient != request.user.patient_profile:
+            return render(request, 'error_403.html', {'message': 'You can only view your own prescriptions.'}, status=403)
+    elif request.user.role == 'doctor':
+        if prescription.appointment.doctor != request.user.doctor_profile:
+            return render(request, 'error_403.html', {'message': 'You can only view prescriptions you have issued.'}, status=403)
+            
+    pdf_bytes = generate_prescription_pdf_bytes(prescription)
+    
+    from io import BytesIO
     from django.http import FileResponse
+    
+    buffer = BytesIO(pdf_bytes)
+    
     if request.GET.get('download') == '1':
         return FileResponse(buffer, as_attachment=True, filename=f"prescription_{pk}.pdf")
     else:

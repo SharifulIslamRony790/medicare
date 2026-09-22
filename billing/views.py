@@ -245,97 +245,156 @@ def generate_receipt_pdf_bytes(payment):
     
     # Create PDF buffer
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
     elements = []
     
-    # Styles
     styles = getSampleStyleSheet()
+    
+    # Header: Hospital Name & Contact Info
+    header_data = [
+        [
+            Paragraph("<b><font size=24 color='#1d4ed8'>MediCare Hospital</font></b><br/><font size=10 color='grey'>Providing safe & professional medical services</font>", styles['Normal']),
+            Paragraph("<font size=12><b>Billing Department</b></font><br/><font size=10 color='grey'>Phone: 077 818 87 69</font>", ParagraphStyle(name='RightAlign', parent=styles['Normal'], alignment=2))
+        ]
+    ]
+    header_table = Table(header_data, colWidths=[4*inch, 3.3*inch])
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+    ]))
+    elements.append(header_table)
+    elements.append(Spacer(1, 10))
+    
+    # Thick Blue Line
+    line = Table([['']], colWidths=[7.3*inch])
+    line.setStyle(TableStyle([('LINEBELOW', (0,0), (-1,-1), 2, colors.HexColor('#1d4ed8'))]))
+    elements.append(line)
+    elements.append(Spacer(1, 15))
+    
+    # Title
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
-        fontSize=24,
-        textColor=colors.HexColor('#2563eb'),
-        spaceAfter=30,
+        fontSize=20,
+        textColor=colors.HexColor('#1f2937'),
+        spaceAfter=15,
         alignment=1
     )
+    elements.append(Paragraph("PAYMENT RECEIPT", title_style))
+    elements.append(Spacer(1, 10))
     
-    # Title
-    elements.append(Paragraph("Payment Receipt", title_style))
-    elements.append(Spacer(1, 0.2*inch))
-    
-    # Receipt Info
+    # Receipt Info Table
+    # Truncate transaction ID if it's too long, or use a smaller font/wider column
+    txn_id = payment.transaction_id
+    if len(txn_id) > 20:
+        txn_id = txn_id[:17] + "..."
+        
     info_data = [
         ['Receipt #:', str(payment.id), 'Date:', payment.timestamp.strftime('%Y-%m-%d')],
-        ['Transaction ID:', payment.transaction_id, 'Time:', payment.timestamp.strftime('%H:%M')],
+        ['Transaction ID:', txn_id, 'Time:', payment.timestamp.strftime('%H:%M')],
     ]
     
-    info_table = Table(info_data, colWidths=[1.5*inch, 2*inch, 1*inch, 1.5*inch])
+    info_table = Table(info_data, colWidths=[1.3*inch, 2.5*inch, 1*inch, 2.5*inch])
     info_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#e5e7eb')),
-        ('BACKGROUND', (2, 0), (2, -1), colors.HexColor('#e5e7eb')),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f3f4f6')),
+        ('BACKGROUND', (2, 0), (2, -1), colors.HexColor('#f3f4f6')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#1f2937')),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
         ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db'))
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e5e7eb'))
     ]))
     
     elements.append(info_table)
-    elements.append(Spacer(1, 0.3*inch))
+    elements.append(Spacer(1, 20))
     
     # Patient Info
-    elements.append(Paragraph("<b>Patient Information:</b>", styles['Heading2']))
-    elements.append(Spacer(1, 0.1*inch))
+    elements.append(Paragraph("<b>Patient Information:</b>", styles['Heading3']))
+    elements.append(Spacer(1, 5))
     
     patient_data = [
         ['Name:', invoice.patient.name],
         ['Phone:', invoice.patient.phone],
     ]
     
-    patient_table = Table(patient_data, colWidths=[1.5*inch, 4.5*inch])
+    patient_table = Table(patient_data, colWidths=[1.5*inch, 5.8*inch])
     patient_table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ]))
     
     elements.append(patient_table)
-    elements.append(Spacer(1, 0.2*inch))
+    elements.append(Spacer(1, 20))
     
     # Payment Details
-    elements.append(Paragraph("<b>Payment Details:</b>", styles['Heading2']))
-    elements.append(Spacer(1, 0.1*inch))
+    elements.append(Paragraph("<b>Payment Details:</b>", styles['Heading3']))
+    elements.append(Spacer(1, 5))
     
     # Check if we have new line items
     line_items = invoice.line_items.all()
-    items_desc = ""
     if line_items.exists():
-        items_desc = ", ".join([f"{item.description} (${item.amount})" for item in line_items])
+        items_desc = ", ".join([f"{item.description}" for item in line_items])
     else:
         items_desc = invoice.items or "N/A"
-
+        
     payment_data = [
         ['Invoice ID:', f'#{invoice.id}'],
         ['Items:', items_desc],
-        ['Payment Method:', payment.get_method_display()],
+        ['Payment Method:', payment.get_method_display().upper()],
         ['Amount Paid:', f'${payment.amount}'],
     ]
     
-    payment_table = Table(payment_data, colWidths=[1.5*inch, 4.5*inch])
+    payment_table = Table(payment_data, colWidths=[1.5*inch, 5.8*inch])
     payment_table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-        ('BACKGROUND', (0, 3), (-1, 3), colors.HexColor('#dbeafe')),
+        ('TOPPADDING', (0, 3), (-1, 3), 8),
+        ('BACKGROUND', (0, 3), (-1, 3), colors.HexColor('#10b981')), # Green for paid amount
+        ('TEXTCOLOR', (0, 3), (-1, 3), colors.white),
     ]))
     
     elements.append(payment_table)
-    elements.append(Spacer(1, 0.3*inch))
+    elements.append(Spacer(1, 40))
     
-    # Footer
-    elements.append(Paragraph("<i>Thank you for choosing MediCare!</i>", styles['Normal']))
+    # Thin Grey Line
+    line2 = Table([['']], colWidths=[7.3*inch])
+    line2.setStyle(TableStyle([('LINEBELOW', (0,0), (-1,-1), 0.5, colors.lightgrey)]))
+    elements.append(line2)
+    elements.append(Spacer(1, 15))
+    
+    # Footer Message
+    elements.append(Paragraph("<font color='grey'><i>Thank you for choosing MediCare Hospital. Wishing you a healthy life!</i></font>", styles['Normal']))
+    
+    # Signature
+    elements.append(Spacer(1, 40))
+    sig_data = [
+        ['', 'MediCare Accounts'],
+        ['', 'AUTHORIZED SIGNATURE'],
+        ['', f"{payment.timestamp.strftime('%b %d, %Y')}"]
+    ]
+    
+    sig_table = Table(sig_data, colWidths=[4.8*inch, 2.5*inch])
+    sig_table.setStyle(TableStyle([
+        ('ALIGN', (1, 0), (1, -1), 'CENTER'),
+        ('FONTNAME', (1, 0), (1, 0), 'Times-BoldItalic'),
+        ('FONTSIZE', (1, 0), (1, 0), 16),
+        ('TEXTCOLOR', (1, 0), (1, 0), colors.HexColor('#1d4ed8')),
+        ('BOTTOMPADDING', (1, 0), (1, 0), 2),
+        ('LINEABOVE', (1, 1), (1, 1), 1, colors.black),
+        ('FONTNAME', (1, 1), (1, 1), 'Helvetica-Bold'),
+        ('FONTSIZE', (1, 1), (1, 1), 8),
+        ('TOPPADDING', (1, 1), (1, 1), 5),
+        ('BOTTOMPADDING', (1, 1), (1, 1), 0),
+        ('FONTNAME', (1, 2), (1, 2), 'Helvetica'),
+        ('FONTSIZE', (1, 2), (1, 2), 7),
+        ('TEXTCOLOR', (1, 2), (1, 2), colors.grey),
+    ]))
+    elements.append(sig_table)
     
     # Build PDF
     doc.build(elements)
