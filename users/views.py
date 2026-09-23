@@ -102,7 +102,7 @@ def patient_signup_view(request):
                 
                 plain_message = f"Dear {user.username},\n\nWelcome to MediCare! We are thrilled to have you on board.\n\nPlease complete your profile to book appointments and easily manage your healthcare services with us.\n\nStay Healthy,\nThe MediCare Team"
                 
-                def send_sync_welcome_email(sub, txt_msg, html_msg, recipient):
+                def send_welcome_email(sub, txt_msg, html_msg, recipient):
                     try:
                         send_mail(
                             sub,
@@ -115,15 +115,11 @@ def patient_signup_view(request):
                     except Exception as e:
                         print(f"Error sending welcome email: {e}")
                         
-                # --- ASYNC THREADING (Commented out for Render compatibility) ---
-                # email_thread = threading.Thread(
-                #     target=send_sync_welcome_email,
-                #     args=(subject, plain_message, html_message, user.email)
-                # )
-                # email_thread.start()
-                
-                # --- DIRECT SEND (Synchronous) ---
-                send_sync_welcome_email(subject, plain_message, html_message, user.email)
+                email_thread = threading.Thread(
+                    target=send_welcome_email,
+                    args=(subject, plain_message, html_message, user.email)
+                )
+                email_thread.start()
 
             messages.success(request, 'Account created successfully! Please complete your profile.')
             return redirect('complete_profile')

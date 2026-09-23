@@ -173,7 +173,7 @@ def appointment_complete(request, pk):
                 from django.core.mail import EmailMultiAlternatives
                 from django.conf import settings
                 
-                def send_sync_completion(sub, txt, html, to_email, pdf, a_id):
+                def send_async_completion(sub, txt, html, to_email, pdf, a_id):
                     try:
                         email = EmailMultiAlternatives(
                             subject=sub,
@@ -187,15 +187,11 @@ def appointment_complete(request, pk):
                     except Exception as e:
                         print(f"Error sending email: {e}")
                         
-                # --- ASYNC THREADING (Commented out for Render compatibility) ---
-                # email_thread = threading.Thread(
-                #     target=send_sync_completion,
-                #     args=(subject, plain_message, html_message, appointment.patient.email, pdf_bytes, appointment.id)
-                # )
-                # email_thread.start()
-                
-                # --- DIRECT SEND (Synchronous) ---
-                send_sync_completion(subject, plain_message, html_message, appointment.patient.email, pdf_bytes, appointment.id)
+                email_thread = threading.Thread(
+                    target=send_async_completion,
+                    args=(subject, plain_message, html_message, appointment.patient.email, pdf_bytes, appointment.id)
+                )
+                email_thread.start()
             except Exception as e:
                 print(f"Failed to generate or send prescription email: {e}")
                 
@@ -248,7 +244,7 @@ def appointment_confirm(request, pk):
                 from django.core.mail import send_mail
                 from django.conf import settings
                 
-                def send_sync_email(subject, txt_msg, html_msg, recipient_list):
+                def send_async_email(subject, txt_msg, html_msg, recipient_list):
                     try:
                         send_mail(
                             subject,
@@ -261,15 +257,11 @@ def appointment_confirm(request, pk):
                     except Exception as e:
                         print(f"Error sending email: {e}")
                         
-                # --- ASYNC THREADING (Commented out for Render compatibility) ---
-                # email_thread = threading.Thread(
-                #     target=send_sync_email,
-                #     args=(subject, plain_message, html_message, [appointment.patient.email])
-                # )
-                # email_thread.start()
-                
-                # --- DIRECT SEND (Synchronous) ---
-                send_sync_email(subject, plain_message, html_message, [appointment.patient.email])
+                email_thread = threading.Thread(
+                    target=send_async_email,
+                    args=(subject, plain_message, html_message, [appointment.patient.email])
+                )
+                email_thread.start()
 
             from django.contrib import messages
             messages.success(request, f"Appointment for {appointment.patient.name} has been confirmed.")

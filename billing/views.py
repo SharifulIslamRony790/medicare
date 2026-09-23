@@ -192,7 +192,7 @@ def payment_process(request, invoice_id, method):
             import threading
             from django.core.mail import EmailMultiAlternatives
             
-            def send_sync_receipt(subject, txt_msg, html_msg, recipient_list, pdf_data, p_id):
+            def send_async_receipt(subject, txt_msg, html_msg, recipient_list, pdf_data, p_id):
                 try:
                     email = EmailMultiAlternatives(
                         subject=subject,
@@ -206,15 +206,11 @@ def payment_process(request, invoice_id, method):
                 except Exception as e:
                     print(f"Error sending email: {e}")
                     
-            # --- ASYNC THREADING (Commented out for Render compatibility) ---
-            # email_thread = threading.Thread(
-            #     target=send_sync_receipt,
-            #     args=(subject, plain_message, html_message, [patient_user.email], pdf_bytes, payment_obj.id)
-            # )
-            # email_thread.start()
-            
-            # --- DIRECT SEND (Synchronous) ---
-            send_sync_receipt(subject, plain_message, html_message, [patient_user.email], pdf_bytes, payment_obj.id)
+            email_thread = threading.Thread(
+                target=send_async_receipt,
+                args=(subject, plain_message, html_message, [patient_user.email], pdf_bytes, payment_obj.id)
+            )
+            email_thread.start()
 
         return redirect('payment_success', invoice_id=invoice.id)
     
